@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  WAGER
+  WIN
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  email           String?   @unique
+  emailVerified   DateTime?
+  image           String?
+  password        String?
+  role            Role      @default(USER)
+  walletBalance   Float     @default(0)
+  bonusBalance    Float     @default(0)
+  bonusWagered    Float     @default(0) // Track how much of the bonus has been used
+  isPwaInstalled  Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  transactions    Transaction[]
+  poolEntries     Participant[]
+}
+
+model Question {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  content       String
+  options       String[]
+  answerIndex   Int
+  difficulty    Difficulty
+  category      String     @default("General")
+  createdAt     DateTime   @default(now())
+}
+
+model Transaction {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String            @db.ObjectId
+  user          User              @relation(fields: [userId], references: [id])
+  type          TransactionType
+  amount        Float
+  status        TransactionStatus @default(PENDING)
+  providerRef   String?           @unique
+  metadata      Json?
+  createdAt     DateTime          @default(now())
+}
+
+model Pool {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  startTime     DateTime
+  entryFee      Float
+  totalStaked   Float         @default(0)
+  status        String        @default("UPCOMING") // UPCOMING, LIVE, COMPLETED
+  participants  Participant[]
+  createdAt     DateTime      @default(now())
+}
+
+model Participant {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  poolId        String    @db.ObjectId
+  pool          Pool      @relation(fields: [poolId], references: [id])
+  userId        String    @db.ObjectId
+  user          User      @relation(fields: [userId], references: [id])
+  score         Int       @default(0)
+  timeTaken     Float     @default(0) // Time-weighted score factor
+  joinedAt      DateTime  @default(now())
+}
