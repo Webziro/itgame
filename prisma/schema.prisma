@@ -50,6 +50,7 @@ model User {
   updatedAt       DateTime  @updatedAt
   transactions    Transaction[]
   poolEntries     Participant[]
+  duels           DuelParticipant[]
 }
 
 model Question {
@@ -94,3 +95,34 @@ model Participant {
   timeTaken     Float     @default(0) // Time-weighted score factor
   joinedAt      DateTime  @default(now())
 }
+
+model Duel {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  wager         Float
+  status        DuelStatus        @default(WAITING)
+  participants  DuelParticipant[]
+  questions     String[]          @db.ObjectId // IDs of questions used
+  winnerId      String?           @db.ObjectId
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model DuelParticipant {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  duelId        String    @db.ObjectId
+  duel          Duel      @relation(fields: [duelId], references: [id])
+  userId        String    @db.ObjectId
+  user          User      @relation(fields: [userId], references: [id])
+  score         Int       @default(0)
+  timeTaken     Float     @default(0)
+  hasFinished   Boolean   @default(false)
+  joinedAt      DateTime  @default(now())
+}
+
+enum DuelStatus {
+  WAITING
+  ACTIVE
+  FINISHED
+  CANCELLED
+}
+

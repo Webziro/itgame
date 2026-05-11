@@ -1,7 +1,7 @@
 'use server';
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@database/prisma";
 import { Difficulty } from "@prisma/client";
 
 export async function startDuel(pledge: number) {

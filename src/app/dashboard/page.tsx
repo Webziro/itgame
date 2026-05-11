@@ -181,12 +181,20 @@ export default function DashboardPage() {
                       <h3 className="text-3xl font-black text-brand-navy">THE DUEL</h3>
                       <p className="text-lg font-bold opacity-50 leading-tight">Instant 1v1 Wagering. Double your money in 60s.</p>
                     </div>
-                    <button className="btn-fun btn-pink w-full py-4 text-sm">Find Opponent</button>
+                    <button 
+                      onClick={() => router.push('/duel')}
+                      className="btn-fun btn-pink w-full py-4 text-sm"
+                    >
+                      Find Opponent
+                    </button>
                   </div>
                 </div>
 
                 {/* Pool Card */}
-                <div className="glass-card p-8 bg-brand-orange/5 border-brand-orange/20 group cursor-pointer relative overflow-hidden">
+                <div 
+                  onClick={() => router.push('/pool')}
+                  className="glass-card p-8 bg-brand-orange/5 border-brand-orange/20 group cursor-pointer relative overflow-hidden"
+                >
                   <div className="absolute top-[-20%] right-[-20%] opacity-10 group-hover:scale-110 transition-transform">
                     <Trophy className="w-48 h-48 text-brand-orange fill-brand-orange" />
                   </div>
