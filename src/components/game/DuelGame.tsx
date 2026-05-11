@@ -92,6 +92,43 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
     }
   };
 
+  const handleOptionClick = (index: number) => {
+    if (selectedOption !== null) return;
+    setSelectedOption(index);
+    const correct = index === questions[currentIndex].answerIndex;
+    if (correct) setScore(prev => prev + 1);
+    
+    setTimeout(() => {
+      handleNextQuestion();
+    }, 1000);
+  };
+
+  const handleNextQuestion = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setSelectedOption(null);
+      setTimeLeft(10);
+    } else {
+      finishGame();
+    }
+  };
+
+  useEffect(() => {
+    if (gameState !== 'playing' || selectedOption !== null) return;
+
+    if (timeLeft === 0) {
+      handleNextQuestion();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+      setTotalTime(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, gameState, selectedOption]);
+
   if (gameState === 'loading') return <div className="text-center p-12"><Loader2 className="animate-spin mx-auto w-8 h-8 mb-4" /> Initializing...</div>;
   
   if (gameState === 'matchmaking') return (

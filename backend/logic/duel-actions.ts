@@ -17,13 +17,28 @@ export async function joinDuel(wager: number) {
   }
 
   return await prisma.$transaction(async (tx) => {
-    // 2. Look for waiting duel
+    // 2a. Check if user ALREADY has a waiting duel with this wager
+    const existingEntry = await tx.duel.findFirst({
+      where: {
+        wager: wager,
+        status: "WAITING",
+        participants: {
+          some: { userId: userId }
+        }
+      }
+    });
+
+    if (existingEntry) {
+      return { duelId: existingEntry.id, status: "WAITING" };
+    }
+
+    // 2b. Look for SOMEONE ELSE'S waiting duel
     const waitingDuel = await tx.duel.findFirst({
       where: {
         wager: wager,
         status: "WAITING",
         participants: {
-          none: { userId: userId } // Don't match with self
+          none: { userId: userId } 
         }
       },
       include: { participants: true }

@@ -36,27 +36,47 @@ export default function DuelPage() {
           </div>
 
           {/* Mode Selector */}
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => setMode('1v1')}
-              className={cn(
-                "p-6 rounded-3xl border-2 flex flex-col items-center gap-3 transition-all",
-                mode === '1v1' ? "border-brand-pink bg-brand-pink/5 text-brand-pink shadow-xl shadow-brand-pink/10" : "border-slate-100 opacity-60 grayscale hover:grayscale-0 hover:opacity-100"
-              )}
-            >
-              <Users className="w-8 h-8" />
-              <div className="font-black uppercase text-xs tracking-widest">Real Opponent</div>
-            </button>
-            <button
-              onClick={() => setMode('solo')}
-              className={cn(
-                "p-6 rounded-3xl border-2 flex flex-col items-center gap-3 transition-all",
-                mode === 'solo' ? "border-brand-navy bg-brand-navy text-white shadow-xl shadow-brand-navy/30" : "border-slate-100 opacity-60 grayscale hover:grayscale-0 hover:opacity-100"
-              )}
-            >
-              <Monitor className="w-8 h-8" />
-              <div className="font-black uppercase text-xs tracking-widest">The Computer</div>
-            </button>
+          <div className="space-y-4">
+            <div className="text-xs font-black uppercase tracking-[0.2em] opacity-40 px-2">Choose Arena Mode</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                onClick={() => setMode('1v1')}
+                className={cn(
+                  "p-6 rounded-3xl border-2 flex items-center gap-4 transition-all text-left group",
+                  mode === '1v1' ? "border-brand-pink bg-white shadow-xl shadow-brand-pink/10" : "border-slate-100 opacity-60 hover:opacity-100 bg-white"
+                )}
+              >
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
+                  mode === '1v1' ? "bg-brand-pink text-white" : "bg-slate-100 text-slate-400 group-hover:bg-brand-pink/10 group-hover:text-brand-pink"
+                )}>
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="font-black uppercase text-sm tracking-tight">1v1 Human Duel</div>
+                  <div className="text-xs font-bold opacity-40">Battle real opponents</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setMode('solo')}
+                className={cn(
+                  "p-6 rounded-3xl border-2 flex items-center gap-4 transition-all text-left group",
+                  mode === 'solo' ? "border-brand-navy bg-brand-navy text-white shadow-xl shadow-brand-navy/30" : "border-slate-100 opacity-60 hover:opacity-100 bg-white"
+                )}
+              >
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
+                  mode === 'solo' ? "bg-white text-brand-navy" : "bg-slate-100 text-slate-400 group-hover:bg-brand-navy/10 group-hover:text-brand-navy"
+                )}>
+                  <Monitor className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="font-black uppercase text-sm tracking-tight">The Computer</div>
+                  <div className="text-xs font-bold opacity-60">Solo - Perfect score wins 2x</div>
+                </div>
+              </button>
+            </div>
           </div>
 
           <div className="space-y-4">

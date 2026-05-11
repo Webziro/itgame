@@ -112,6 +112,15 @@ body {
   fill: none;
 }
 
+.bg-mesh {
+  background-color: #0A1128;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(343, 100%, 60%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(172, 100%, 48%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(220, 100%, 50%, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(343, 100%, 60%, 0.1) 0px, transparent 50%);
+}
+
 /* Legacy Utilities */
 .bg-primary { background-color: #2B5292; }
 .text-primary { color: #2B5292; }
