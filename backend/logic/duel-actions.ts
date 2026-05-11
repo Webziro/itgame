@@ -124,44 +124,69 @@ export async function joinDuel(wager: number) {
 
 export async function joinSoloDuel(wager: number) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-  const userId = session.user.id;
-
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user || (user.walletBalance + user.bonusBalance) < wager) {
-    throw new Error("Insufficient balance");
-  }
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("Unauthorized");
 
   return await prisma.$transaction(async (tx) => {
-    let fromBonus = Math.min(user.bonusBalance, wager);
-    let fromWallet = wager - fromBonus;
+    // 1. Check for existing UNFINISHED solo duel to prevent double deduction
+    const existingSolo = await tx.duel.findFirst({
+      where: {
+        status: "ACTIVE",
+        participants: {
+          every: { userId: userId } // Only the user is in it
+        }
+      },
+      include: { participants: true }
+    });
 
+    if (existingSolo) {
+      // Fetch questions for the existing duel or get new ones if none
+      const qIds = existingSolo.questions || [];
+      const questions = await tx.question.findMany({
+        where: { id: { in: qIds } }
+      });
+      return { duelId: existingSolo.id, questions };
+    }
+
+    const user = await tx.user.findUnique({ where: { id: userId } });
+    if (!user || user.walletBalance < wager) throw new Error("Insufficient balance");
+
+    // 2. Deduct wager
+    const ref = `DUEL_SOLO_${userId}_${Date.now()}`;
     await tx.user.update({
       where: { id: userId },
-      data: {
-        walletBalance: { decrement: fromWallet },
-        bonusBalance: { decrement: fromBonus },
-        bonusWagered: { increment: fromBonus }
+      data: { 
+        walletBalance: { decrement: wager },
+        transactions: {
+          create: {
+            amount: wager,
+            type: "WAGER",
+            status: "SUCCESS",
+            providerRef: ref,
+            description: `Solo Arena Wager: ₦${wager}`
+          }
+        }
       }
     });
 
-    await tx.transaction.create({
-      data: {
-        userId: userId,
-        type: "WAGER",
-        amount: wager,
-        status: "SUCCESS",
-        providerRef: `solo_wager_${userId}_${Date.now()}`,
-        metadata: { type: "SOLO_DUEL", wager }
-      }
-    });
-
+    // 3. Create Solo Duel
     const questions = await tx.question.findMany({
       where: { difficulty: "MEDIUM" },
       take: 5
     });
 
-    return { questions, status: "STARTED" };
+    const duel = await tx.duel.create({
+      data: {
+        wager,
+        status: "ACTIVE",
+        questions: questions.map(q => q.id),
+        participants: {
+          create: { userId }
+        }
+      }
+    });
+
+    return { duelId: duel.id, questions };
   });
 }
 

@@ -43,7 +43,7 @@ export default function DuelPage() {
                 onClick={() => setMode('1v1')}
                 className={cn(
                   "p-6 rounded-3xl border-2 flex items-center gap-4 transition-all text-left group",
-                  mode === '1v1' ? "border-brand-pink bg-white shadow-xl shadow-brand-pink/10" : "border-slate-100 opacity-60 hover:opacity-100 bg-white"
+                  mode === '1v1' ? "border-brand-pink bg-white shadow-xl shadow-brand-pink/10" : "border-slate-100 bg-white hover:border-brand-pink/30"
                 )}
               >
                 <div className={cn(
@@ -53,8 +53,8 @@ export default function DuelPage() {
                   <Users className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-black uppercase text-sm tracking-tight">1v1 Human Duel</div>
-                  <div className="text-xs font-bold opacity-40">Battle real opponents</div>
+                  <div className="font-black uppercase text-sm tracking-tight text-brand-navy">1v1 Human Duel</div>
+                  <div className="text-xs font-bold text-brand-navy/50">Battle real opponents</div>
                 </div>
               </button>
 
@@ -62,7 +62,7 @@ export default function DuelPage() {
                 onClick={() => setMode('solo')}
                 className={cn(
                   "p-6 rounded-3xl border-2 flex items-center gap-4 transition-all text-left group",
-                  mode === 'solo' ? "border-brand-navy bg-brand-navy text-white shadow-xl shadow-brand-navy/30" : "border-slate-100 opacity-60 hover:opacity-100 bg-white"
+                  mode === 'solo' ? "border-brand-navy bg-brand-navy text-white shadow-xl shadow-brand-navy/30" : "border-slate-100 bg-white hover:border-brand-navy/30"
                 )}
               >
                 <div className={cn(
@@ -72,15 +72,15 @@ export default function DuelPage() {
                   <Monitor className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-black uppercase text-sm tracking-tight">The Computer</div>
-                  <div className="text-xs font-bold opacity-60">Solo - Perfect score wins 2x</div>
+                  <div className={cn("font-black uppercase text-sm tracking-tight", mode === 'solo' ? "text-white" : "text-brand-navy")}>The Computer</div>
+                  <div className={cn("text-xs font-bold", mode === 'solo' ? "text-white/60" : "text-brand-navy/50")}>Solo - Perfect score wins 2x</div>
                 </div>
               </button>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="text-xs font-black uppercase tracking-[0.2em] opacity-40 px-2">Select Wager</div>
+            <div className="text-xs font-black uppercase tracking-[0.2em] text-brand-navy/30 px-2">Select Wager</div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {options.map((opt) => (
                 <button
@@ -88,8 +88,8 @@ export default function DuelPage() {
                   onClick={() => setPledge(opt)}
                   className={`p-6 rounded-2xl border-2 transition-all text-center ${
                     pledge === opt 
-                      ? 'border-primary bg-primary/5 text-primary shadow-lg shadow-primary/10' 
-                      : 'border-slate-100 hover:border-slate-200 text-brand-navy/60'
+                      ? 'border-brand-pink bg-brand-pink/5 text-brand-pink shadow-lg shadow-brand-pink/10' 
+                      : 'border-slate-100 hover:border-slate-200 text-brand-navy'
                   }`}
                 >
                   <div className="text-2xl font-black">₦{opt.toLocaleString()}</div>
