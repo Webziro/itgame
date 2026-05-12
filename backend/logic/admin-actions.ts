@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@database/prisma";
 import { Difficulty } from "@prisma/client";
 import { parse } from "csv-parse/sync";
 
