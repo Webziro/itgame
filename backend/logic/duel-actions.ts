@@ -127,67 +127,79 @@ export async function joinSoloDuel(wager: number) {
   const userId = session?.user?.id;
   if (!userId) throw new Error("Unauthorized");
 
-  return await prisma.$transaction(async (tx) => {
-    // 1. Check for existing UNFINISHED solo duel to prevent double deduction
-    const existingSolo = await tx.duel.findFirst({
-      where: {
-        status: "ACTIVE",
-        participants: {
-          every: { userId: userId } // Only the user is in it
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      return await prisma.$transaction(async (tx) => {
+        // 1. Check for existing UNFINISHED solo duel
+        const existingSolo = await tx.duel.findFirst({
+          where: {
+            status: "ACTIVE",
+            participants: {
+              every: { userId: userId }
+            }
+          },
+          include: { participants: true }
+        });
+
+        if (existingSolo) {
+          const qIds = existingSolo.questions || [];
+          const questions = await tx.question.findMany({
+            where: { id: { in: qIds } }
+          });
+          return { duelId: existingSolo.id, questions };
         }
-      },
-      include: { participants: true }
-    });
 
-    if (existingSolo) {
-      // Fetch questions for the existing duel or get new ones if none
-      const qIds = existingSolo.questions || [];
-      const questions = await tx.question.findMany({
-        where: { id: { in: qIds } }
-      });
-      return { duelId: existingSolo.id, questions };
-    }
+        const user = await tx.user.findUnique({ where: { id: userId } });
+        if (!user || user.walletBalance < wager) throw new Error("Insufficient balance");
 
-    const user = await tx.user.findUnique({ where: { id: userId } });
-    if (!user || user.walletBalance < wager) throw new Error("Insufficient balance");
-
-    // 2. Deduct wager
-    const ref = `DUEL_SOLO_${userId}_${Date.now()}`;
-    await tx.user.update({
-      where: { id: userId },
-      data: { 
-        walletBalance: { decrement: wager },
-        transactions: {
-          create: {
-            amount: wager,
-            type: "WAGER",
-            status: "SUCCESS",
-            providerRef: ref,
-            description: `Solo Arena Wager: ₦${wager}`
+        // 2. Deduct wager
+        const ref = `DUEL_SOLO_${userId}_${Date.now()}`;
+        await tx.user.update({
+          where: { id: userId },
+          data: { 
+            walletBalance: { decrement: wager },
+            transactions: {
+              create: {
+                amount: wager,
+                type: "WAGER",
+                status: "SUCCESS",
+                providerRef: ref,
+                description: `Solo Arena Wager: ₦${wager}`
+              }
+            }
           }
-        }
+        });
+
+        // 3. Create Solo Duel
+        const questions = await tx.question.findMany({
+          where: { difficulty: "MEDIUM" },
+          take: 5
+        });
+
+        const duel = await tx.duel.create({
+          data: {
+            wager,
+            status: "ACTIVE",
+            questions: questions.map(q => q.id),
+            participants: {
+              create: { userId }
+            }
+          }
+        });
+
+        return { duelId: duel.id, questions };
+      });
+    } catch (err: any) {
+      if (err.message?.includes('connection') || err.labels?.includes('TransientTransactionError')) {
+        retries--;
+        if (retries === 0) throw err;
+        await new Promise(r => setTimeout(r, 1000)); // Wait 1s before retry
+        continue;
       }
-    });
-
-    // 3. Create Solo Duel
-    const questions = await tx.question.findMany({
-      where: { difficulty: "MEDIUM" },
-      take: 5
-    });
-
-    const duel = await tx.duel.create({
-      data: {
-        wager,
-        status: "ACTIVE",
-        questions: questions.map(q => q.id),
-        participants: {
-          create: { userId }
-        }
-      }
-    });
-
-    return { duelId: duel.id, questions };
-  });
+      throw err;
+    }
+  }
 }
 
 export async function submitSoloScore(wager: number, score: number) {
