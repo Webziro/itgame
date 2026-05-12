@@ -71,6 +71,7 @@ model Transaction {
   amount        Float
   status        TransactionStatus @default(PENDING)
   providerRef   String?           @unique
+  description   String?
   metadata      Json?
   createdAt     DateTime          @default(now())
 }

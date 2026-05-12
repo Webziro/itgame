@@ -53,6 +53,7 @@ export async function joinPool(poolId: string) {
         amount: pool.entryFee,
         status: "SUCCESS",
         providerRef: `wager_pool_${poolId}_${userId}`,
+        description: `Jackpot Pool Entry Fee: ₦${pool.entryFee}`,
         metadata: { type: "POOL_ENTRY", poolId }
       }
     });
@@ -127,6 +128,7 @@ export async function processPoolPayout(poolId: string) {
           amount: amount,
           status: "SUCCESS",
           providerRef: `win_pool_${poolId}_${winners[i].userId}`,
+          description: `Jackpot Pool Win: Rank #${i + 1}`,
           metadata: { poolId, rank: i + 1 }
         }
       });

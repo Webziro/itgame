@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "worker": "tsx backend/worker.ts",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
