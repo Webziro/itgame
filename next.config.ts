@@ -8,7 +8,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const nextConfig: NextConfig = {
-  turbopack: {},
+  transpilePackages: ["@prisma/client"],
 };
 
 export default withPWA(nextConfig);
