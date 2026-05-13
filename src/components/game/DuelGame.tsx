@@ -27,10 +27,12 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
       try {
         if (mode === 'solo') {
           const res = await joinSoloDuel(pledge);
+          if (!res) return;
           setQuestions(res.questions);
           setGameState('playing');
         } else {
           const res = await joinDuel(pledge);
+          if (!res) return;
           setDuelId(res.duelId);
           if (res.status === 'STARTED') {
             setQuestions(res.questions);
