@@ -8,7 +8,9 @@ import { signIn } from 'next-auth/react';
 import { signUp } from '@/actions/auth';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function SignUpPage() {
+import { Suspense } from 'react';
+
+function SignUpForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const bonus = searchParams.get('bonus');
@@ -140,5 +142,13 @@ export default function SignUpPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignUpForm />
+    </Suspense>
   );
 }
