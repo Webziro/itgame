@@ -3,7 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@database/prisma";
 import { pusherServer } from "@database/pusher";
-import { DuelStatus } from "@prisma/client";
+import { DuelStatus } from "@/generated/client";
 
 export async function joinDuel(wager: number) {
   const session = await auth();

@@ -7,7 +7,8 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   skipWaiting: true,
 });
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },

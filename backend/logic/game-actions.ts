@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@database/prisma";
-import { Difficulty } from "@prisma/client";
+import { Difficulty } from "@/generated/client";
 
 export async function startDuel(pledge: number) {
   const session = await auth();
