@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "worker": "tsx backend/worker.ts",
     "lint": "eslint",
@@ -14,7 +14,6 @@
     "@auth/prisma-adapter": "^2.11.2",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@prisma/client": "^6.19.3",
-    "@prisma/config": "^7.8.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/canvas-confetti": "^1.9.0",
     "axios": "^1.16.0",
@@ -42,12 +41,10 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "15.1.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  }
 }
+
