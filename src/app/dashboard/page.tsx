@@ -55,7 +55,7 @@ export default function DashboardPage() {
         });
 
         return () => {
-          pusherClient.unsubscribe('platform-events');
+          pusherClient?.unsubscribe('platform-events');
         };
       }
     }
