@@ -67,7 +67,7 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
     });
 
     return () => {
-      pusherClient.unsubscribe(`user-${session.user.id}`);
+      pusherClient?.unsubscribe(`user-${session.user.id}`);
     };
   }, [session, mode]);
 
