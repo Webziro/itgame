@@ -28,14 +28,14 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
         if (mode === 'solo') {
           const res = await joinSoloDuel(pledge);
           if (!res || !res.questions) return;
-          setQuestions(res.questions);
+          setQuestions(res.questions as any[]);
           setGameState('playing');
         } else {
           const res = await joinDuel(pledge);
           if (!res) return;
           setDuelId(res.duelId);
           if (res.status === 'STARTED' && res.questions) {
-            setQuestions(res.questions);
+            setQuestions(res.questions as any[]);
             setGameState('playing');
           } else {
             setGameState('matchmaking');
