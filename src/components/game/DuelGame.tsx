@@ -52,7 +52,7 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
   useEffect(() => {
     if (mode === 'solo' || !session?.user?.id || !pusherClient) return;
 
-    const channel = pusherClient.subscribe(`user-${session.user.id}`);
+    const channel = pusherClient.subscribe(`user-${session?.user?.id}`);
     
     channel.bind('duel-started', (data: { duelId: string, questions: any[] }) => {
       setDuelId(data.duelId);
@@ -67,7 +67,9 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
     });
 
     return () => {
-      pusherClient?.unsubscribe(`user-${session.user.id}`);
+      if (session?.user?.id) {
+        pusherClient?.unsubscribe(`user-${session.user.id}`);
+      }
     };
   }, [session, mode]);
 
@@ -97,6 +99,7 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
   const handleOptionClick = (index: number) => {
     if (selectedOption !== null) return;
     setSelectedOption(index);
+    if (!questions[currentIndex]) return;
     const correct = index === questions[currentIndex].answerIndex;
     const newScore = correct ? score + 1 : score;
     if (correct) setScore(newScore);
