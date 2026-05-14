@@ -1,7 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import DuelGame from '@/components/game/DuelGame';
+import dynamic from 'next/dynamic';
+
+const DuelGame = dynamic(() => import('@/components/game/DuelGame'), { 
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center min-h-screen bg-brand-navy text-white">
+    <div className="w-12 h-12 border-4 border-brand-pink border-t-transparent rounded-full animate-spin" />
+  </div>
+});
+
 import { Zap, ArrowLeft, Wallet, Monitor, Users } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@database/utils';
