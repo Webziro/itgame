@@ -14,9 +14,15 @@ export default function PoolPage() {
 
   useEffect(() => {
     async function fetchPool() {
-      const p = await getActivePool();
-      setPool(p);
-      setLoading(false);
+      try {
+        const p = await getActivePool();
+        setPool(p);
+      } catch (err) {
+        console.error("Failed to fetch pool:", err);
+        setPool(null);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchPool();
   }, []);
