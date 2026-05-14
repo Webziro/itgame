@@ -151,7 +151,7 @@ export async function joinSoloDuel(wager: number) {
               where: { id: { in: qIds } }
             });
             if (questions.length > 0) {
-              return { success: true, duelId: existingSolo.id, questions: JSON.parse(JSON.stringify(questions)) };
+              return { success: true, duelId: existingSolo.id, questions: JSON.parse(JSON.stringify(questions)), error: undefined };
             }
           }
 
@@ -209,7 +209,7 @@ export async function joinSoloDuel(wager: number) {
             }
           });
 
-          return { success: true, duelId: duel.id, questions: JSON.parse(JSON.stringify(questions)) };
+          return { success: true, duelId: duel.id, questions: JSON.parse(JSON.stringify(questions)), error: undefined };
         });
         return result;
       } catch (err: any) {
@@ -222,10 +222,10 @@ export async function joinSoloDuel(wager: number) {
         throw err;
       }
     }
-    return { success: false, error: "Failed to connect to arena after retries." };
+    return { success: false, error: "Failed to connect to arena after retries.", duelId: undefined, questions: undefined };
   } catch (err: any) {
     console.error("joinSoloDuel Error:", err);
-    return { success: false, error: err.message || "An unexpected error occurred in the Arena." };
+    return { success: false, error: err.message || "An unexpected error occurred in the Arena.", duelId: undefined, questions: undefined };
   }
 }
 

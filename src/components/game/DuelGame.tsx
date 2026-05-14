@@ -26,7 +26,7 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
     async function init() {
       try {
         if (mode === 'solo') {
-          const res = await joinSoloDuel(pledge);
+          const res = await joinSoloDuel(pledge) as any;
           if (!res.success) {
             setGameState('error');
             setErrorMsg(res.error || "Failed to start solo arena.");
