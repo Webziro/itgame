@@ -23,19 +23,32 @@ function SignUpForm() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    const result = await signUp(formData, bonus);
+    
+    try {
+      const result = await signUp(formData, bonus);
 
-    if (result.error) {
-      setError(result.error);
+      if (result.error) {
+        setError(result.error);
+        setLoading(false);
+      } else {
+        const email = formData.get('email');
+        const password = formData.get('password');
+        const signInResult = await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (signInResult?.error) {
+          setError(signInResult.error);
+          setLoading(false);
+        } else {
+          router.push('/dashboard');
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
       setLoading(false);
-    } else {
-      const email = formData.get('email');
-      const password = formData.get('password');
-      await signIn('credentials', {
-        email,
-        password,
-        callbackUrl: '/dashboard',
-      });
     }
   }
 
