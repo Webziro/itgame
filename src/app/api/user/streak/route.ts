@@ -64,7 +64,7 @@ export async function POST() {
         where: {
             userId: user.id,
             type: "WIN",
-            metadata: { path: "streak_bonus" },
+            description: "7-Day Streak Bonus",
             createdAt: {
                 gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
             }
