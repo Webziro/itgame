@@ -125,100 +125,107 @@ export async function joinDuel(wager: number) {
 }
 
 export async function joinSoloDuel(wager: number) {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) throw new Error("Unauthorized: Please sign in to play");
+  try {
+    const session = await auth();
+    const userId = session?.user?.id;
+    if (!userId) return { success: false, error: "Unauthorized: Please sign in to play" };
 
-  let retries = 3;
-  while (retries > 0) {
-    try {
-      return await prisma.$transaction(async (tx) => {
-        // 1. Check for existing UNFINISHED solo duel
-        const existingSolo = await tx.duel.findFirst({
-          where: {
-            status: "ACTIVE",
-            participants: {
-              every: { userId: userId }
-            }
-          },
-          include: { participants: true }
-        });
-
-        if (existingSolo) {
-          const qIds = existingSolo.questions || [];
-          const questions = await tx.question.findMany({
-            where: { id: { in: qIds } }
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const result = await prisma.$transaction(async (tx) => {
+          // 1. Check for existing UNFINISHED solo duel
+          const existingSolo = await tx.duel.findFirst({
+            where: {
+              status: "ACTIVE",
+              participants: {
+                every: { userId: userId }
+              }
+            },
+            include: { participants: true }
           });
-          if (questions.length > 0) {
-            return { duelId: existingSolo.id, questions: JSON.parse(JSON.stringify(questions)) };
+
+          if (existingSolo) {
+            const qIds = existingSolo.questions || [];
+            const questions = await tx.question.findMany({
+              where: { id: { in: qIds } }
+            });
+            if (questions.length > 0) {
+              return { success: true, duelId: existingSolo.id, questions: JSON.parse(JSON.stringify(questions)) };
+            }
           }
-        }
 
-        const user = await tx.user.findUnique({ where: { id: userId } });
-        if (!user) throw new Error("User not found");
-        
-        const totalBalance = user.walletBalance + user.bonusBalance;
-        if (totalBalance < wager) {
-          throw new Error(`Insufficient balance. You need ₦${wager} to enter this arena.`);
-        }
+          const user = await tx.user.findUnique({ where: { id: userId } });
+          if (!user) throw new Error("User not found");
+          
+          const totalBalance = user.walletBalance + user.bonusBalance;
+          if (totalBalance < wager) {
+            throw new Error(`Insufficient balance. You need ₦${wager} to enter this arena.`);
+          }
 
-        // 2. Fetch Questions FIRST (ensure we have enough)
-        const questions = await tx.question.findMany({
-          where: { difficulty: "MEDIUM" },
-          take: 5
-        });
+          // 2. Fetch Questions FIRST (ensure we have enough)
+          const questions = await tx.question.findMany({
+            where: { difficulty: "MEDIUM" },
+            take: 5
+          });
 
-        if (questions.length < 5) {
-          throw new Error("Arena is under maintenance (Not enough questions). Please try again later.");
-        }
+          if (questions.length < 5) {
+            throw new Error("Arena is under maintenance (Not enough questions). Please try again later.");
+          }
 
-        // 3. Deduct wager (Check bonus first)
-        let fromBonus = Math.min(user.bonusBalance, wager);
-        let fromWallet = wager - fromBonus;
+          // 3. Deduct wager (Check bonus first)
+          let fromBonus = Math.min(user.bonusBalance, wager);
+          let fromWallet = wager - fromBonus;
 
-        const ref = `DUEL_SOLO_${userId}_${Date.now()}`;
-        await tx.user.update({
-          where: { id: userId },
-          data: { 
-            walletBalance: { decrement: fromWallet },
-            bonusBalance: { decrement: fromBonus },
-            bonusWagered: { increment: fromBonus },
-            transactions: {
-              create: {
-                amount: wager,
-                type: "WAGER",
-                status: "SUCCESS",
-                providerRef: ref,
-                description: `Solo Arena Wager: ₦${wager}`,
-                metadata: { type: "SOLO_DUEL" }
+          const ref = `DUEL_SOLO_${userId}_${Date.now()}`;
+          await tx.user.update({
+            where: { id: userId },
+            data: { 
+              walletBalance: { decrement: fromWallet },
+              bonusBalance: { decrement: fromBonus },
+              bonusWagered: { increment: fromBonus },
+              transactions: {
+                create: {
+                  amount: wager,
+                  type: "WAGER",
+                  status: "SUCCESS",
+                  providerRef: ref,
+                  description: `Solo Arena Wager: ₦${wager}`,
+                  metadata: { type: "SOLO_DUEL" }
+                }
               }
             }
-          }
-        });
+          });
 
-        // 4. Create Solo Duel
-        const duel = await tx.duel.create({
-          data: {
-            wager,
-            status: "ACTIVE",
-            questions: questions.map(q => q.id),
-            participants: {
-              create: { userId }
+          // 4. Create Solo Duel
+          const duel = await tx.duel.create({
+            data: {
+              wager,
+              status: "ACTIVE",
+              questions: questions.map(q => q.id),
+              participants: {
+                create: { userId }
+              }
             }
-          }
-        });
+          });
 
-        return { duelId: duel.id, questions: JSON.parse(JSON.stringify(questions)) };
-      });
-    } catch (err: any) {
-      if (err.message?.includes('connection') || err.labels?.includes('TransientTransactionError')) {
-        retries--;
-        if (retries === 0) throw err;
-        await new Promise(r => setTimeout(r, 1000));
-        continue;
+          return { success: true, duelId: duel.id, questions: JSON.parse(JSON.stringify(questions)) };
+        });
+        return result;
+      } catch (err: any) {
+        if (err.message?.includes('connection') || err.labels?.includes('TransientTransactionError')) {
+          retries--;
+          if (retries === 0) throw err;
+          await new Promise(r => setTimeout(r, 1000));
+          continue;
+        }
+        throw err;
       }
-      throw err;
     }
+    return { success: false, error: "Failed to connect to arena after retries." };
+  } catch (err: any) {
+    console.error("joinSoloDuel Error:", err);
+    return { success: false, error: err.message || "An unexpected error occurred in the Arena." };
   }
 }
 
