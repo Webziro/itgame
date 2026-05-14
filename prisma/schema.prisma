@@ -48,6 +48,8 @@ model User {
   bonusBalance    Float     @default(0)
   bonusWagered    Float     @default(0) // Track how much of the bonus has been used
   isPwaInstalled  Boolean   @default(false)
+  streak          Int       @default(0)
+  lastLogin       DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   transactions    Transaction[]

@@ -29,14 +29,13 @@ export default function DashboardPage() {
   const router = useRouter();
   const [balance, setBalance] = useState<number>(0);
   const [loadingBalance, setLoadingBalance] = useState(true);
-  const [activities, setActivities] = useState([
-    { user: 'Bolu_01', prize: '₦5,000', type: 'Duel Win', initial: 'B' },
-    { user: 'Ehis_Trade', prize: '₦12,400', type: 'Pool Entry', initial: 'E' },
-    { user: 'Sarah_X', prize: '₦2,500', type: 'Duel Win', initial: 'S' },
-  ]);
+  const [streak, setStreak] = useState<number>(0);
+  const [claimingStreak, setClaimingStreak] = useState(false);
+  const [activities, setActivities] = useState<any[]>([]);
 
   useEffect(() => {
     if (session?.user) {
+      // Fetch Balance
       axios.get('/api/user/balance')
         .then(res => {
           setBalance(res.data.balance);
@@ -46,6 +45,25 @@ export default function DashboardPage() {
           console.error("Failed to fetch balance", err);
           setLoadingBalance(false);
         });
+
+      // Fetch Global Pulse Activities
+      axios.get('/api/activities/latest')
+        .then(res => {
+          if (res.data.activities?.length > 0) {
+            setActivities(res.data.activities);
+          } else {
+             // Fallback to some placeholder if empty
+             setActivities([
+                { user: 'TriviaBot', prize: '₦1,000', type: 'Welcome Win', initial: 'T' }
+             ]);
+          }
+        })
+        .catch(err => console.error("Pulse failed", err));
+
+      // Fetch/Update Streak
+      axios.get('/api/user/streak')
+        .then(res => setStreak(res.data.streak))
+        .catch(err => console.error("Streak failed", err));
 
       // Listen for global events
       if (pusherClient) {
@@ -60,6 +78,23 @@ export default function DashboardPage() {
       }
     }
   }, [session]);
+
+  const handleClaimStreak = async () => {
+    if (streak < 7) return;
+    try {
+      setClaimingStreak(true);
+      await axios.post('/api/user/streak');
+      setStreak(0);
+      // Refresh balance
+      const balRes = await axios.get('/api/user/balance');
+      setBalance(balRes.data.balance);
+      alert("Success! ₦500 Streak Bonus added to your Nitro Balance.");
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Failed to claim bonus");
+    } finally {
+      setClaimingStreak(false);
+    }
+  };
 
   if (status === 'loading') return null;
 
@@ -248,13 +283,27 @@ export default function DashboardPage() {
               {/* Bonus Tracker */}
               <div className="glass-card p-8 bg-white/80 overflow-hidden relative">
                 <div className="absolute bottom-0 right-0 w-32 h-32 bg-brand-pink/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
-                <h4 className="text-sm font-black text-brand-navy mb-4">Daily Streak Bonus</h4>
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-sm font-black text-brand-navy">Daily Streak Bonus</h4>
+                  <span className="text-xs font-black text-brand-pink">{streak}/7 Days</span>
+                </div>
                 <div className="flex gap-2 mb-6">
-                  {[1, 1, 1, 0, 0, 0, 0].map((active, i) => (
-                    <div key={i} className={`flex-1 h-2 rounded-full ${active ? 'bg-brand-pink' : 'bg-brand-navy/5'}`} />
+                  {[...Array(7)].map((_, i) => (
+                    <div key={i} className={`flex-1 h-2 rounded-full ${i < streak ? 'bg-brand-pink' : 'bg-brand-navy/5'}`} />
                   ))}
                 </div>
-                <p className="text-xs font-bold opacity-50">Play 4 more days to unlock ₦500 bonus.</p>
+                
+                {streak >= 7 ? (
+                  <button 
+                    onClick={handleClaimStreak}
+                    disabled={claimingStreak}
+                    className="w-full py-4 bg-brand-pink text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand-pink/30 hover:-translate-y-1 transition-all"
+                  >
+                    {claimingStreak ? "Claiming..." : "Claim ₦500 Bonus"}
+                  </button>
+                ) : (
+                  <p className="text-xs font-bold opacity-50">Play {7 - streak} more days to unlock ₦500 bonus.</p>
+                )}
               </div>
             </div>
           </div>
