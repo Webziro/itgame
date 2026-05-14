@@ -1,7 +1,7 @@
 'use server';
 
 import { prisma } from "@database/prisma";
-import { Difficulty } from "@/generated/client";
+import { Difficulty } from "@prisma/client";
 import { parse } from "csv-parse/sync";
 
 export async function uploadQuestionsCsv(formData: FormData) {
