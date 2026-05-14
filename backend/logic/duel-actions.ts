@@ -3,7 +3,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@database/prisma";
 import { pusherServer } from "@/lib/pusher-server";
-import { DuelStatus } from "@/generated/client";
+// Remove enum import to prevent serialization issues
+// import { DuelStatus } from "@/generated/client";
+type DuelStatus = 'WAITING' | 'ACTIVE' | 'FINISHED' | 'CANCELLED';
 
 export async function joinDuel(wager: number) {
   const session = await auth();

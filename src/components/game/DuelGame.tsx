@@ -42,8 +42,9 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
           }
         }
       } catch (err: any) {
+        console.error("Arena Init Error:", err);
         setGameState('error');
-        setErrorMsg(err.message || "Something went wrong");
+        setErrorMsg(err.message || "An unexpected error occurred. Please check your balance and try again.");
       }
     }
     if (session?.user?.id) init();
@@ -310,7 +311,9 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
                 <>
                   <AlertCircle className="w-20 h-20 text-red-500 mx-auto mb-8" />
                   <h2 className="text-5xl font-black text-red-500 uppercase tracking-tighter mb-4">Arena Error</h2>
-                  <p className="text-white/60 font-bold mb-12">{errorMsg}</p>
+                  <p className="text-white/60 font-bold mb-12">
+                    {typeof errorMsg === 'string' ? errorMsg : "Something went wrong. Please check your balance."}
+                  </p>
                 </>
               )}
 
