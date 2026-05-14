@@ -8,8 +8,12 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const reference = searchParams.get("reference");
 
+    const host = req.headers.get("host");
+    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    const baseUrl = `${protocol}://${host}`;
+
     if (!reference) {
-      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/dashboard?error=no_reference`);
+      return NextResponse.redirect(`${baseUrl}/dashboard?error=no_reference`);
     }
 
     // Verify with Paystack
@@ -54,12 +58,15 @@ export async function GET(req: Request) {
         });
       }
 
-      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/dashboard?success=true`);
+      return NextResponse.redirect(`${baseUrl}/dashboard?success=true`);
     }
 
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/dashboard?error=failed`);
+    return NextResponse.redirect(`${baseUrl}/dashboard?error=failed`);
   } catch (error) {
     console.error("[PAYMENT_VERIFY_ERROR]", error);
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/dashboard?error=internal_error`);
+    const host = req.headers.get("host");
+    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    const baseUrl = `${protocol}://${host}`;
+    return NextResponse.redirect(`${baseUrl}/dashboard?error=internal_error`);
   }
 }

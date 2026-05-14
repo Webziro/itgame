@@ -16,13 +16,17 @@ export async function POST(req: Request) {
       return new NextResponse("Invalid amount (Minimum 100 Naira)", { status: 400 });
     }
 
+    const host = req.headers.get("host");
+    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    const baseUrl = `${protocol}://${host}`;
+
     // Initialize Paystack Transaction
     const response = await axios.post(
       "https://api.paystack.co/transaction/initialize",
       {
         email: session.user.email,
         amount: amount * 100, // Paystack uses Kobo
-        callback_url: `${process.env.NEXTAUTH_URL}/api/payments/verify`,
+        callback_url: `${baseUrl}/api/payments/verify`,
         metadata: {
           userId: session.user.id,
         },
