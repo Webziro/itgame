@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { prisma } from '@database/prisma';
-import { pusherServer } from '@database/pusher';
+import { pusherServer } from '@/lib/pusher-server';
 import { processPoolPayout } from '@logic/pool-actions';
 
 console.log('🚀 TriviaWin Background Worker Started...');

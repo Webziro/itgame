@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@database/prisma';
-import { pusherServer } from '@database/pusher';
+import { pusherServer } from '@/lib/pusher-server';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');

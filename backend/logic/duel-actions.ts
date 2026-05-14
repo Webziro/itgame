@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@database/prisma";
-import { pusherServer } from "@database/pusher";
+import { pusherServer } from "@/lib/pusher-server";
 import { DuelStatus } from "@/generated/client";
 
 export async function joinDuel(wager: number) {
@@ -125,7 +125,7 @@ export async function joinDuel(wager: number) {
 export async function joinSoloDuel(wager: number) {
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) throw new Error("Unauthorized: Please sign in to play");
 
   let retries = 3;
   while (retries > 0) {
@@ -147,36 +147,54 @@ export async function joinSoloDuel(wager: number) {
           const questions = await tx.question.findMany({
             where: { id: { in: qIds } }
           });
-          return { duelId: existingSolo.id, questions };
+          if (questions.length > 0) {
+            return { duelId: existingSolo.id, questions: JSON.parse(JSON.stringify(questions)) };
+          }
         }
 
         const user = await tx.user.findUnique({ where: { id: userId } });
-        if (!user || user.walletBalance < wager) throw new Error("Insufficient balance");
+        if (!user) throw new Error("User not found");
+        
+        const totalBalance = user.walletBalance + user.bonusBalance;
+        if (totalBalance < wager) {
+          throw new Error(`Insufficient balance. You need ₦${wager} to enter this arena.`);
+        }
 
-        // 2. Deduct wager
+        // 2. Fetch Questions FIRST (ensure we have enough)
+        const questions = await tx.question.findMany({
+          where: { difficulty: "MEDIUM" },
+          take: 5
+        });
+
+        if (questions.length < 5) {
+          throw new Error("Arena is under maintenance (Not enough questions). Please try again later.");
+        }
+
+        // 3. Deduct wager (Check bonus first)
+        let fromBonus = Math.min(user.bonusBalance, wager);
+        let fromWallet = wager - fromBonus;
+
         const ref = `DUEL_SOLO_${userId}_${Date.now()}`;
         await tx.user.update({
           where: { id: userId },
           data: { 
-            walletBalance: { decrement: wager },
+            walletBalance: { decrement: fromWallet },
+            bonusBalance: { decrement: fromBonus },
+            bonusWagered: { increment: fromBonus },
             transactions: {
               create: {
                 amount: wager,
                 type: "WAGER",
                 status: "SUCCESS",
                 providerRef: ref,
-                description: `Solo Arena Wager: ₦${wager}`
+                description: `Solo Arena Wager: ₦${wager}`,
+                metadata: { type: "SOLO_DUEL" }
               }
             }
           }
         });
 
-        // 3. Create Solo Duel
-        const questions = await tx.question.findMany({
-          where: { difficulty: "MEDIUM" },
-          take: 5
-        });
-
+        // 4. Create Solo Duel
         const duel = await tx.duel.create({
           data: {
             wager,
@@ -188,13 +206,13 @@ export async function joinSoloDuel(wager: number) {
           }
         });
 
-        return { duelId: duel.id, questions };
+        return { duelId: duel.id, questions: JSON.parse(JSON.stringify(questions)) };
       });
     } catch (err: any) {
       if (err.message?.includes('connection') || err.labels?.includes('TransientTransactionError')) {
         retries--;
         if (retries === 0) throw err;
-        await new Promise(r => setTimeout(r, 1000)); // Wait 1s before retry
+        await new Promise(r => setTimeout(r, 1000));
         continue;
       }
       throw err;

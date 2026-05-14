@@ -22,7 +22,7 @@ import { useRouter } from 'next/navigation';
 import DepositButton from '@/components/game/DepositButton';
 import axios from 'axios';
 
-import { pusherClient } from '@/lib/pusher';
+import { pusherClient } from '@/lib/pusher-client';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();

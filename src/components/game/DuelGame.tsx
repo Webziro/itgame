@@ -6,7 +6,7 @@ import { joinDuel, submitDuelScore, joinSoloDuel, submitSoloScore, cancelDuel } 
 import { Timer, Check, X, Loader2, AlertCircle, Monitor, Users, Zap } from 'lucide-react';
 import { cn } from '@database/utils';
 import { useSession } from 'next-auth/react';
-import { pusherClient } from '@database/pusher';
+import { pusherClient } from '@/lib/pusher-client';
 import { useRouter } from 'next/navigation';
 
 export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo' | '1v1' }) {

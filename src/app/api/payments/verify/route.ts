@@ -1,5 +1,5 @@
 import { prisma } from "@database/prisma";
-import { pusherServer } from "@/lib/pusher";
+import { pusherServer } from "@/lib/pusher-server";
 import axios from "axios";
 import { NextResponse } from "next/server";
 
