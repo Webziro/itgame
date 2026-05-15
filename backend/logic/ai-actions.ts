@@ -37,8 +37,9 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
     5. No markdown formatting, just the raw JSON array.`;
 
     // Use direct fetch to hit the stable v1 API
-    // Using gemini-2.0-flash as confirmed by your ListModels diagnostic
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    // Using gemini-2.0-flash-lite as it typically has a much higher free-tier quota
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`;
+
 
     
     const response = await fetch(url, {
