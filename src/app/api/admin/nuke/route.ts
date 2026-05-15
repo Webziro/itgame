@@ -3,15 +3,22 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    
+    // Diagnostic: List available models first
+    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
+    const listData = await listRes.json();
+    const modelNames = listData.models?.map((m: any) => m.name).join(", ") || "None found";
+
     const res = await nukeAndRefillQuestions();
     if (res.success) {
       return new NextResponse(
-        `<h1>Success!</h1><p>${res.message}</p><p><a href="/dashboard">Return to Dashboard</a></p>`,
+        `<h1>Success!</h1><p>${res.message}</p><p>Available models: ${modelNames}</p><p><a href="/dashboard">Return to Dashboard</a></p>`,
         { headers: { 'Content-Type': 'text/html' } }
       );
     } else {
       return new NextResponse(
-        `<h1>Error</h1><p>${res.error}</p>`,
+        `<h1>Error</h1><p>${res.error}</p><p><strong>Your Key supports these models:</strong><br/> ${modelNames}</p>`,
         { headers: { 'Content-Type': 'text/html' } }
       );
     }
@@ -19,3 +26,4 @@ export async function GET() {
     return new NextResponse(`<h1>Fatal Error</h1><p>${error.message}</p>`, { status: 500 });
   }
 }
+
