@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@database/prisma";
 import { pusherServer } from "@/lib/pusher-server";
+import { refillQuestionPool } from "./ai-actions";
 // Remove enum import to prevent serialization issues
 // import { DuelStatus } from "@/generated/client";
 type DuelStatus = 'WAITING' | 'ACTIVE' | 'FINISHED' | 'CANCELLED';
@@ -164,14 +165,34 @@ export async function joinSoloDuel(wager: number) {
           }
 
           // 2. Fetch Questions FIRST (ensure we have enough)
-          const questions = await tx.question.findMany({
+          const totalAvailable = await tx.question.count({ where: { difficulty: "MEDIUM" } });
+          
+          // Background refill if low
+          if (totalAvailable < 10) {
+            console.log("🌊 Question pool low, triggering AI refill...");
+            // We don't await this to keep the user experience fast
+            refillQuestionPool("MEDIUM", 20).catch(console.error);
+          }
+
+          // 2. Fetch 5 RANDOM Questions
+          const allQuestions = await tx.question.findMany({
             where: { difficulty: "MEDIUM" },
-            take: 5
+            select: { id: true }
           });
 
-          if (questions.length < 5) {
-            throw new Error("Arena is under maintenance (Not enough questions). Please try again later.");
+          if (allQuestions.length < 5) {
+            throw new Error("Arena is under maintenance (Questions are being generated). Please try again in 30 seconds.");
           }
+
+          // Pick 5 random IDs
+          const selectedIds = allQuestions
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 5)
+            .map(q => q.id);
+
+          const questions = await tx.question.findMany({
+            where: { id: { in: selectedIds } }
+          });
 
           // 3. Deduct wager (Check bonus first)
           let fromBonus = Math.min(user.bonusBalance, wager);
