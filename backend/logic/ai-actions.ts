@@ -85,22 +85,44 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
   }
 }
 
+async function seedLocalQuestions() {
+  const EASY = [
+    { content: "What is the capital of Nigeria?", options: ["Lagos", "Abuja", "Kano", "Ibadan"], answerIndex: 1, category: "General", difficulty: 'EASY' },
+    { content: "Which of these is a popular Nigerian dish?", options: ["Sushi", "Jollof Rice", "Pizza", "Tacos"], answerIndex: 1, category: "Food", difficulty: 'EASY' },
+    { content: "Who is the 'Giant of Africa'?", options: ["South Africa", "Egypt", "Nigeria", "Kenya"], answerIndex: 2, category: "General", difficulty: 'EASY' },
+    { content: "What color is the Nigerian flag?", options: ["Red and White", "Green and White", "Blue and Yellow", "Black and Gold"], answerIndex: 1, category: "General", difficulty: 'EASY' }
+  ];
+  
+  const HARD = [
+    { content: "Which Nigerian scientist invented the world's fastest supercomputer in 1989?", options: ["Philip Emeagwali", "Bartholomew Nnaji", "Jelani Aliyu", "Kunle Olukotun"], answerIndex: 0, category: "Science", difficulty: 'HARD' },
+    { content: "What was the first capital city of the Southern Protectorate of Nigeria?", options: ["Lagos", "Calabar", "Asaba", "Warri"], answerIndex: 1, category: "History", difficulty: 'HARD' },
+    { content: "Which treaty ended the Nigerian Civil War in 1970?", options: ["The Accra Accord", "The Aburi Accord", "No formal treaty", "The Lagos Peace Pact"], answerIndex: 2, category: "History", difficulty: 'HARD' }
+  ];
+
+  await prisma.question.createMany({ data: [...EASY, ...HARD] as any });
+}
+
 export async function nukeAndRefillQuestions() {
   try {
     // 1. Delete all questions
     await prisma.question.deleteMany({});
 
-    // 2. Refill for all difficulties
-    // Sequential to avoid rate limits
-    await refillQuestionPool("EASY", 15);
-    await refillQuestionPool("MEDIUM", 15);
-    await refillQuestionPool("HARD", 15);
-
-    return { success: true, message: "Database nuked and refilled with 45 fresh AI questions." };
+    // 2. Try Refill for all difficulties (AI)
+    try {
+      await refillQuestionPool("EASY", 15);
+      await refillQuestionPool("MEDIUM", 15);
+      await refillQuestionPool("HARD", 15);
+      return { success: true, message: "Database nuked and refilled with 45 fresh AI questions." };
+    } catch (aiErr: any) {
+      console.warn("AI Refill failed, falling back to local seed...", aiErr.message);
+      await seedLocalQuestions();
+      return { success: true, message: "Database nuked and refilled with High-Quality Starter Questions (AI was unavailable)." };
+    }
   } catch (error: any) {
     console.error("Nuke Error:", error);
     return { success: false, error: error.message };
   }
 }
+
 
 
