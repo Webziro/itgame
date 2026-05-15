@@ -100,6 +100,13 @@ async function seedLocalQuestions() {
     { content: "How many states are in Nigeria?", options: ["30", "32", "36", "38"], answerIndex: 2, category: "General", difficulty: 'EASY' }
   ];
   
+  const MEDIUM = [
+    { content: "In what year did Nigeria become a republic?", options: ["1960", "1963", "1970", "1999"], answerIndex: 1, category: "History", difficulty: 'MEDIUM' },
+    { content: "Which Nigerian author wrote 'Things Fall Apart'?", options: ["Wole Soyinka", "Chinua Achebe", "Ben Okri", "Buchi Emecheta"], answerIndex: 1, category: "Literature", difficulty: 'MEDIUM' },
+    { content: "Which river is the longest in Nigeria?", options: ["River Benue", "River Niger", "River Cross", "River Ogun"], answerIndex: 1, category: "Geography", difficulty: 'MEDIUM' },
+    { content: "What is the nickname of the Nigerian national football team?", options: ["The Lions", "The Stars", "The Super Eagles", "The Warriors"], answerIndex: 2, category: "Sports", difficulty: 'MEDIUM' }
+  ];
+  
   const HARD = [
     { content: "Which Nigerian scientist invented the world's fastest supercomputer in 1989?", options: ["Philip Emeagwali", "Bartholomew Nnaji", "Jelani Aliyu", "Kunle Olukotun"], answerIndex: 0, category: "Science", difficulty: 'HARD' },
     { content: "What was the first capital city of the Southern Protectorate of Nigeria?", options: ["Lagos", "Calabar", "Asaba", "Warri"], answerIndex: 1, category: "History", difficulty: 'HARD' },
@@ -109,9 +116,9 @@ async function seedLocalQuestions() {
     { content: "Which Nigerian architect designed the National Arts Theatre?", options: ["James Cubitt", "Bayo Adeola", "Technoexporststroy", "Arc. Fola"], answerIndex: 2, category: "Architecture", difficulty: 'HARD' }
   ];
 
-
-  await prisma.question.createMany({ data: [...EASY, ...HARD] as any });
+  await prisma.question.createMany({ data: [...EASY, ...MEDIUM, ...HARD] as any });
 }
+
 
 export async function nukeAndRefillQuestions() {
   try {
