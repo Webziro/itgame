@@ -59,7 +59,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   },
+  events: {
+    async createUser({ user }) {
+      const { cookies } = await import("next/headers");
+      const cookieStore = await cookies();
+      const bonus = cookieStore.get("victory_bonus")?.value;
+      if (bonus === "1000") {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { bonusBalance: 1000 }
+        });
+        cookieStore.delete("victory_bonus");
+      }
+    }
+  },
   session: { strategy: "jwt" },
+
   pages: {
     signIn: '/auth/signin',
   }

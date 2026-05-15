@@ -62,9 +62,12 @@ export default function FreeGame() {
         setIsCorrect(null);
       } else {
         setGameState('finished');
-        const finalScore = score + (correct ? 1 : 0);
-        if (finalScore === questions.length) {
-          const duration = 3 * 1000;
+          const finalScore = score + (correct ? 1 : 0);
+          if (finalScore === questions.length) {
+            // Set a victory cookie so the reward is given on signup regardless of method
+            document.cookie = "victory_bonus=1000; path=/; max-age=86400; SameSite=Lax";
+            
+            const duration = 3 * 1000;
           const end = Date.now() + duration;
 
           const frame = () => {
