@@ -38,8 +38,7 @@ export default function DashboardPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNuking, setIsNuking] = useState(false);
 
-  // Temporarily enabling for you to fix the database
-  const isAdmin = true; // (session?.user as any)?.role === 'ADMIN' || process.env.NODE_ENV === 'development';
+  const isAdmin = (session?.user as any)?.role === 'ADMIN' || process.env.NODE_ENV === 'development';
 
   const handleNukeQuestions = async () => {
     if (!confirm("⚠️ DANGER: This will delete ALL current questions and generate 45 NEW ones from Gemini. Proceed?")) return;

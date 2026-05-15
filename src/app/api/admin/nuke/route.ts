@@ -3,13 +3,6 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    
-    // Diagnostic: List available models first
-    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
-    const listData = await listRes.json();
-    const modelNames = listData.models?.map((m: any) => m.name).join(", ") || "None found";
-
     const res = await nukeAndRefillQuestions();
     if (res.success) {
       return new NextResponse(
