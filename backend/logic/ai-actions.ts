@@ -15,9 +15,9 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("GEMINI_API_KEY is missing");
 
-    const prompt = `Generate ${count} unique trivia questions for a real-money game.
+    const prompt = `Generate ${count} unique, high-quality trivia questions for a professional global competition.
     Difficulty: ${difficulty}.
-    Category: Mix of General Knowledge, Science, Tech, Sports, and Nigerian History.
+    Categories: Global History, Modern Science, International Tech, World Geography, Popular Culture, Sports (Global), and Business.
     
     Return EXACTLY a JSON array of objects with this structure:
     [
@@ -30,11 +30,13 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
     ]
     
     Rules:
-    1. Ensure there is only ONE correct answer.
-    2. options must have exactly 4 items.
-    3. answerIndex must be between 0 and 3.
-    4. Questions must be engaging and accurate.
-    5. No markdown formatting, just the raw JSON array.`;
+    1. Absolute Variety: No two questions in this set of ${count} should be similar. Vary the time periods, locations, and subjects significantly.
+    2. Zero Clichés: Avoid common questions like "Who discovered gravity?" or "What is the capital of France?". Dig deeper for interesting, professional-level facts.
+    3. Global Breadth: Cover a mix of Europe, Africa, Asia, Americas, and Oceania.
+    4. Options: Exactly 4 options, only 1 correct, answerIndex 0-3.
+    5. Formatting: Raw JSON array ONLY. No markdown, no prose.`;
+
+
 
     // Use direct fetch to hit the stable v1 API
     // Using gemini-2.0-flash-lite as it typically has a much higher free-tier quota
@@ -127,10 +129,10 @@ export async function nukeAndRefillQuestions() {
 
     // 2. Try Refill for all difficulties (AI)
     try {
-      await refillQuestionPool("EASY", 15);
-      await refillQuestionPool("MEDIUM", 15);
-      await refillQuestionPool("HARD", 15);
-      return { success: true, message: "Database nuked and refilled with 45 fresh AI questions." };
+      await refillQuestionPool("EASY", 50);
+      await refillQuestionPool("MEDIUM", 50);
+      await refillQuestionPool("HARD", 50);
+      return { success: true, message: "Database nuked and refilled with 150 fresh GLOBAL AI questions." };
     } catch (aiErr: any) {
       console.warn("AI Refill failed, falling back to local seed...", aiErr.message);
       await seedLocalQuestions();
