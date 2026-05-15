@@ -166,19 +166,20 @@ export default function FreeGame() {
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div
-          key={currentIndex}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="space-y-10"
-        >
-          <h3 className="text-2xl lg:text-3xl font-black text-brand-navy dark:text-white leading-[1.1]">
-            {currentQuestion.content}
-          </h3>
+        {currentQuestion && currentQuestion.options && (
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-10"
+          >
+            <h3 className="text-2xl lg:text-3xl font-black text-white leading-[1.1]">
+              {currentQuestion.content}
+            </h3>
 
-          <div className="grid gap-4">
-            {currentQuestion.options.map((option, index) => {
+            <div className="grid gap-4">
+              {currentQuestion.options.map((option: string, index: number) => {
               const isSelected = selectedOption === index;
               const isCorrectAnswer = index === currentQuestion.answerIndex;
               
@@ -210,7 +211,9 @@ export default function FreeGame() {
             })}
           </div>
         </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
 }
+
