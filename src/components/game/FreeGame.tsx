@@ -25,9 +25,10 @@ export default function FreeGame() {
           setQuestions(data);
           setGameState('playing');
         } else {
-          // Fallback if DB is empty
+          // Fallback to static questions if DB is empty
+          const { HARD_QUESTIONS } = await import('@/data/hard-questions');
+          setQuestions(HARD_QUESTIONS);
           setGameState('playing');
-          setQuestions([]); 
         }
       } catch (err) {
         console.error("Failed to fetch questions", err);
