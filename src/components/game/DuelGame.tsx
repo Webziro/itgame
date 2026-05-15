@@ -15,7 +15,7 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
-  const [gameState, setGameState] = useState<'loading' | 'matchmaking' | 'playing' | 'waiting-opponent' | 'won' | 'lost' | 'draw' | 'error'>('loading');
+  const [gameState, setGameState] = useState<'rules' | 'loading' | 'matchmaking' | 'playing' | 'waiting-opponent' | 'won' | 'lost' | 'draw' | 'error'>('rules');
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [duelId, setDuelId] = useState<string | null>(null);
@@ -51,8 +51,23 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
         setErrorMsg(err.message || "An unexpected error occurred. Please check your balance and try again.");
       }
     }
-    if (session?.user?.id) init();
-  }, [pledge, session, mode]);
+    if (session?.user?.id && gameState === 'loading') init();
+  }, [pledge, session, mode, gameState]);
+
+  // Anti-Cheat: Tab Switch Detection
+  useEffect(() => {
+    if (gameState !== 'playing') return;
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setScore(0);
+        finishGame(0);
+        alert("🚨 CHEAT DETECTED: Arena ended because you switched tabs.");
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [gameState]);
+
 
   useEffect(() => {
     if (mode === 'solo' || !session?.user?.id || !pusherClient) return;
@@ -160,13 +175,51 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
   const currentQuestion = questions[currentIndex];
 
   return (
-    <div className="min-h-screen bg-mesh flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div 
+      onContextMenu={(e) => e.preventDefault()}
+      className="min-h-screen bg-mesh flex flex-col items-center justify-center p-4 relative overflow-hidden select-none"
+    >
       {/* Decorative background elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-pink/10 rounded-full blur-[120px] animate-pulse" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-teal/10 rounded-full blur-[120px] animate-pulse delay-700" />
 
       <div className="w-full max-w-xl z-10">
         <AnimatePresence mode="wait">
+          {gameState === 'rules' && (
+            <motion.div 
+              key="rules"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card p-8 bg-white/5 border-white/10"
+            >
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Arena Rules</h2>
+                <p className="text-sm font-bold text-white/40 tracking-widest uppercase mt-2">Strict enforcement active</p>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                {[
+                  { icon: <Timer className="w-4 h-4" />, text: "10 seconds max per question" },
+                  { icon: <X className="w-4 h-4" />, text: "No tab switching (Instant Loss)" },
+                  { icon: <AlertCircle className="w-4 h-4" />, text: "No copying or right-clicking" },
+                  { icon: <Zap className="w-4 h-4" />, text: `Wager: ₦${pledge.toLocaleString()}` }
+                ].map((rule, i) => (
+                  <div key={i} className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <div className="text-brand-pink">{rule.icon}</div>
+                    <span className="text-sm font-bold text-white/80">{rule.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                onClick={() => setGameState('loading')}
+                className="btn-fun btn-pink w-full justify-center text-xl py-6"
+              >
+                Accept & Start Match
+              </button>
+            </motion.div>
+          )}
+
           {gameState === 'loading' && (
             <motion.div
               key="loading"
