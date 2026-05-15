@@ -5,6 +5,10 @@ import { prisma } from "@database/prisma";
 import { auth } from "@/auth";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+// The SDK version in package.json might not support the options object in constructor
+// but we'll try to set it via the model options instead if this fails.
+
+
 
 export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD', count: number = 10) {
   try {
@@ -60,14 +64,7 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
       } catch (err: any) {
         console.warn(`Model ${modelName} failed, trying next...`, err.message);
         if (modelName === modelNames[modelNames.length - 1]) {
-           // Before giving up, try to list what's available
-           try {
-             const available = await genAI.listModels();
-             const names = available.models?.map(m => m.name).join(", ");
-             throw new Error(`All models failed. Your key supports: ${names || "None"}. Last error: ${err.message}`);
-           } catch (listErr) {
-             throw err; // Fallback to original error if listing fails
-           }
+           throw new Error(`All models failed. Last error: ${err.message}`);
         }
       }
     }
