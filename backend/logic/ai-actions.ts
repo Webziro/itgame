@@ -18,8 +18,14 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
     }
     */
 
-    // Try multiple model names in case one is restricted or deprecated in your region
-    const modelNames = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+    // Try multiple model names and prefixes in case the API requires a specific format
+    const modelNames = [
+      "gemini-1.5-flash", 
+      "models/gemini-1.5-flash", 
+      "gemini-1.5-flash-latest", 
+      "gemini-pro",
+      "models/gemini-pro"
+    ];
     let model;
     let result;
 
@@ -53,7 +59,16 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
         if (result) break; // Success!
       } catch (err: any) {
         console.warn(`Model ${modelName} failed, trying next...`, err.message);
-        if (modelName === modelNames[modelNames.length - 1]) throw err; // All failed
+        if (modelName === modelNames[modelNames.length - 1]) {
+           // Before giving up, try to list what's available
+           try {
+             const available = await genAI.listModels();
+             const names = available.models?.map(m => m.name).join(", ");
+             throw new Error(`All models failed. Your key supports: ${names || "None"}. Last error: ${err.message}`);
+           } catch (listErr) {
+             throw err; // Fallback to original error if listing fails
+           }
+        }
       }
     }
 
