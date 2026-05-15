@@ -26,6 +26,8 @@ import axios from 'axios';
 
 import { pusherClient } from '@/lib/pusher-client';
 import { nukeAndRefillQuestions } from '@/../backend/logic/ai-actions';
+import { cn } from "@database/utils";
+
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -37,6 +39,8 @@ export default function DashboardPage() {
   const [activities, setActivities] = useState<any[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNuking, setIsNuking] = useState(false);
+  const [poolInfo, setPoolInfo] = useState<any>(null);
+
 
   const isAdmin = (session?.user as any)?.role === 'ADMIN' || process.env.NODE_ENV === 'development';
 
@@ -90,7 +94,12 @@ export default function DashboardPage() {
         .then(res => setStreak(res.data.streak))
         .catch(err => console.error("Streak failed", err));
 
-      // Listen for global events
+    // Fetch Pool Info
+    axios.get('/api/pools/info')
+      .then(res => setPoolInfo(res.data))
+      .catch(err => console.error("Pool info failed", err));
+
+    // Listen for global events
       if (pusherClient) {
         const channel = pusherClient.subscribe('platform-events');
         channel.bind('global-activity', (data: any) => {
@@ -297,11 +306,42 @@ export default function DashboardPage() {
                       <h3 className="text-3xl font-black text-white uppercase italic">The Pool</h3>
                       <p className="text-lg font-bold opacity-50 leading-tight">Weekly Jackpot. Low entry, massive rewards.</p>
                     </div>
-                    <div className="flex items-center gap-2 text-brand-orange font-black text-sm uppercase tracking-widest">
-                      <Star className="w-4 h-4 fill-brand-orange" /> Next Pool: Fri 7PM
+                    
+                    {poolInfo && (
+                      <div className="grid grid-cols-2 gap-4 py-2 border-y border-white/5">
+                        <div>
+                          <div className="text-[10px] font-black opacity-40 uppercase tracking-widest">Players</div>
+                          <div className="text-xl font-black text-white">{poolInfo.participantCount || 0}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-black opacity-40 uppercase tracking-widest">Prize Pool</div>
+                          <div className="text-xl font-black text-brand-teal">₦{poolInfo.totalPrize?.toLocaleString() || "0"}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={cn(
+                      "flex items-center gap-2 font-black text-xs uppercase tracking-widest",
+                      poolInfo?.isRegistrationOpen ? "text-brand-teal" : "text-brand-orange"
+                    )}>
+                      <Star className={cn("w-4 h-4", poolInfo?.isRegistrationOpen ? "fill-brand-teal" : "fill-brand-orange")} /> 
+                      {poolInfo?.message || "Next Pool: Loading..."}
                     </div>
-                  </div>
-                </div>
+                    
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (poolInfo?.isRegistrationOpen) router.push('/pool');
+                        else alert(poolInfo?.message || "Registration is not yet open.");
+                      }}
+                      className={cn(
+                        "btn-fun w-full py-4 text-sm transition-all",
+                        poolInfo?.isRegistrationOpen ? "btn-orange" : "bg-white/10 text-white/40 cursor-not-allowed"
+                      )}
+                    >
+                      {poolInfo?.isRegistrationOpen ? "Enter Pool" : "Wait for Reg"}
+                    </button>
+
               </div>
             </div>
 

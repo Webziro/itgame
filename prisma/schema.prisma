@@ -174,3 +174,11 @@ enum DuelStatus {
   CANCELLED
 }
 
+model IpAttempt {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  ip            String    @unique
+  attempts      Int       @default(0)
+  lastAttempt   DateTime  @default(now())
+  isBlocked     Boolean   @default(false)
+  blockedUntil  DateTime?
+}
