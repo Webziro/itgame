@@ -230,33 +230,39 @@ export async function joinSoloDuel(wager: number) {
 }
 
 export async function submitSoloScore(wager: number, score: number) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-  const userId = session.user.id;
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+    const userId = session.user.id;
 
-  // Rule: Must answer ALL 5 correctly to win 2x
-  if (score === 5) {
-    const winAmount = wager * 2;
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: userId },
-        data: { walletBalance: { increment: winAmount } }
-      }),
-      prisma.transaction.create({
-        data: {
-          userId,
-          type: "WIN",
-          amount: winAmount,
-          status: "SUCCESS",
-          providerRef: `solo_win_${userId}_${Date.now()}`,
-          metadata: { type: "SOLO_WIN", wager }
-        }
-      })
-    ]);
-    return { result: "WIN", winAmount };
+    // Rule: Must answer ALL 5 correctly to win 2x
+    if (score === 5) {
+      const winAmount = wager * 2;
+      await prisma.$transaction([
+        prisma.user.update({
+          where: { id: userId },
+          data: { walletBalance: { increment: winAmount } }
+        }),
+        prisma.transaction.create({
+          data: {
+            userId,
+            type: "WIN",
+            amount: winAmount,
+            status: "SUCCESS",
+            providerRef: `solo_win_${userId}_${Date.now()}`,
+            description: `Solo Arena Win: ₦${winAmount}`,
+            metadata: { type: "SOLO_WIN", wager }
+          }
+        })
+      ]);
+      return { success: true, result: "WIN", winAmount };
+    }
+
+    return { success: true, result: "LOSS" };
+  } catch (err: any) {
+    console.error("submitSoloScore Error:", err);
+    return { success: false, error: err.message || "Failed to submit score" };
   }
-
-  return { result: "LOSS" };
 }
 
 export async function cancelDuel(duelId: string) {
@@ -301,48 +307,55 @@ export async function cancelDuel(duelId: string) {
 
 
 export async function submitDuelScore(duelId: string, score: number, timeTaken: number) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
-  const userId = session.user.id;
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+    const userId = session.user.id;
 
-  const result = await prisma.$transaction(async (tx) => {
-    const participant = await tx.duelParticipant.findFirst({
-      where: { duelId, userId }
-    });
+    const result = await prisma.$transaction(async (tx) => {
+      const participant = await tx.duelParticipant.findFirst({
+        where: { duelId, userId }
+      });
 
-    if (!participant) throw new Error("Participant not found");
-    if (participant.hasFinished) throw new Error("Already submitted");
+      if (!participant) throw new Error("Participant not found");
+      if (participant.hasFinished) throw new Error("Already submitted");
 
-    await tx.duelParticipant.update({
-      where: { id: participant.id },
-      data: {
-        score,
-        timeTaken,
-        hasFinished: true
+      await tx.duelParticipant.update({
+        where: { id: participant.id },
+        data: {
+          score,
+          timeTaken,
+          hasFinished: true
+        }
+      });
+
+      const duel = await tx.duel.findUnique({
+        where: { id: duelId },
+        include: { participants: true }
+      });
+
+      if (!duel) throw new Error("Duel not found");
+
+      const allFinished = duel.participants.every(p => p.hasFinished);
+
+      if (allFinished) {
+        return { resolve: true };
       }
+
+      return { resolve: false };
     });
 
-    const duel = await tx.duel.findUnique({
-      where: { id: duelId },
-      include: { participants: true }
-    });
-
-    if (!duel) throw new Error("Duel not found");
-
-    const allFinished = duel.participants.every(p => p.hasFinished);
-
-    if (allFinished) {
-      return { duel, resolve: true };
+    if (result.resolve) {
+      // Run resolution in the background or await it
+      // We await it here for safety, but return a clean object
+      await resolveDuel(duelId);
     }
 
-    return { duel, resolve: false };
-  });
-
-  if (result.resolve) {
-    await resolveDuel(duelId);
+    return { success: true };
+  } catch (err: any) {
+    console.error("submitDuelScore Error:", err);
+    return { success: false, error: err.message || "Failed to submit duel score" };
   }
-
-  return { success: true };
 }
 
 async function resolveDuel(duelId: string) {

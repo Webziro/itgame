@@ -89,15 +89,30 @@ export default function DuelGame({ pledge, mode }: { pledge: number, mode: 'solo
   };
 
   const finishGame = async (finalScore: number) => {
-    if (mode === 'solo') {
-      setGameState('loading');
-      const res = await submitSoloScore(pledge, finalScore);
-      if (res.result === 'WIN') setGameState('won');
-      else setGameState('lost');
-    } else {
-      if (!duelId) return;
-      setGameState('waiting-opponent');
-      await submitDuelScore(duelId, finalScore, totalTime);
+    try {
+      if (mode === 'solo') {
+        setGameState('loading');
+        const res = await submitSoloScore(pledge, finalScore) as any;
+        if (res.success) {
+          if (res.result === 'WIN') setGameState('won');
+          else setGameState('lost');
+        } else {
+          setGameState('error');
+          setErrorMsg(res.error || "Failed to submit score.");
+        }
+      } else {
+        if (!duelId) return;
+        setGameState('waiting-opponent');
+        const res = await submitDuelScore(duelId, finalScore, totalTime) as any;
+        if (!res.success) {
+          setGameState('error');
+          setErrorMsg(res.error || "Failed to submit duel score.");
+        }
+      }
+    } catch (err: any) {
+      console.error("Finish Game Error:", err);
+      setGameState('error');
+      setErrorMsg(err.message || "An unexpected error occurred while saving your results.");
     }
   };
 
