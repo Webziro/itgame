@@ -18,30 +18,45 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
     }
     */
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Try multiple model names in case one is restricted or deprecated in your region
+    const modelNames = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+    let model;
+    let result;
 
-    const prompt = `Generate ${count} unique trivia questions for a real-money game.
-    Difficulty: ${difficulty}.
-    Category: Mix of General Knowledge, Science, Tech, Sports, and Nigerian History.
-    
-    Return EXACTLY a JSON array of objects with this structure:
-    [
-      {
-        "content": "Question text?",
-        "options": ["Option A", "Option B", "Option C", "Option D"],
-        "answerIndex": 0,
-        "category": "Science"
+    for (const modelName of modelNames) {
+      try {
+        console.log(`🤖 Attempting generation with ${modelName}...`);
+        model = genAI.getGenerativeModel({ model: modelName });
+        
+        const prompt = `Generate ${count} unique trivia questions for a real-money game.
+        Difficulty: ${difficulty}.
+        Category: Mix of General Knowledge, Science, Tech, Sports, and Nigerian History.
+        
+        Return EXACTLY a JSON array of objects with this structure:
+        [
+          {
+            "content": "Question text?",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "answerIndex": 0,
+            "category": "Science"
+          }
+        ]
+        
+        Rules:
+        1. Ensure there is only ONE correct answer.
+        2. options must have exactly 4 items.
+        3. answerIndex must be between 0 and 3.
+        4. Questions must be engaging and accurate.
+        5. No markdown formatting, just the raw JSON array.`;
+
+        result = await model.generateContent(prompt);
+        if (result) break; // Success!
+      } catch (err: any) {
+        console.warn(`Model ${modelName} failed, trying next...`, err.message);
+        if (modelName === modelNames[modelNames.length - 1]) throw err; // All failed
       }
-    ]
-    
-    Rules:
-    1. Ensure there is only ONE correct answer.
-    2. options must have exactly 4 items.
-    3. answerIndex must be between 0 and 3.
-    4. Questions must be engaging and accurate.
-    5. No markdown formatting, just the raw JSON array.`;
+    }
 
-    const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     
