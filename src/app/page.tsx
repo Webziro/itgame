@@ -7,7 +7,7 @@ export default async function Home() {
   const session = await auth();
 
   return (
-    <main className="min-h-screen bg-[#f8fafc] dark:bg-[#0f172a] relative overflow-hidden">
+    <main className="min-h-screen bg-[#f1f5f9] dark:bg-[#0f172a] relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-brand-pink/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-brand-teal/10 blur-[120px] rounded-full" />
@@ -63,24 +63,24 @@ export default async function Home() {
               Join 10k+ players competing for massive pools. Score <span className="text-brand-teal font-black">10/10</span> in the Hard Tier to grab your ₦1,000 bonus.
             </p>
             
-            <div className="flex flex-wrap gap-6 items-center">
-              <div className="glass-card p-6 flex items-center gap-4 bg-white/40">
-                <div className="w-12 h-12 bg-brand-teal/20 rounded-full flex items-center justify-center">
-                  <Users className="text-brand-teal w-6 h-6" />
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-6 items-center">
+              <div className="glass-card p-4 sm:p-6 flex items-center gap-3 sm:gap-4 bg-white/40">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand-teal/20 rounded-full flex items-center justify-center shrink-0">
+                  <Users className="text-brand-teal w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <div className="text-2xl font-black text-brand-navy dark:text-white">10K+</div>
-                  <div className="text-xs uppercase font-black opacity-40">Live Players</div>
+                  <div className="text-lg sm:text-2xl font-black text-brand-navy dark:text-white">10K+</div>
+                  <div className="text-[10px] sm:text-xs uppercase font-black opacity-40">Live Players</div>
                 </div>
               </div>
 
-              <div className="glass-card p-6 flex items-center gap-4 bg-white/40">
-                <div className="w-12 h-12 bg-brand-orange/20 rounded-full flex items-center justify-center">
-                  <Star className="text-brand-orange w-6 h-6 fill-brand-orange" />
+              <div className="glass-card p-4 sm:p-6 flex items-center gap-3 sm:gap-4 bg-white/40">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand-orange/20 rounded-full flex items-center justify-center shrink-0">
+                  <Star className="text-brand-orange w-5 h-5 sm:w-6 sm:h-6 fill-brand-orange" />
                 </div>
                 <div>
-                  <div className="text-2xl font-black text-brand-navy dark:text-white">₦2.5M+</div>
-                  <div className="text-xs uppercase font-black opacity-40">Total Payouts</div>
+                  <div className="text-lg sm:text-2xl font-black text-brand-navy dark:text-white">₦2.5M+</div>
+                  <div className="text-[10px] sm:text-xs uppercase font-black opacity-40">Total Payouts</div>
                 </div>
               </div>
             </div>

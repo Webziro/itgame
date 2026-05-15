@@ -14,7 +14,9 @@ import {
   Star,
   Bell,
   Settings,
-  LogOut
+  LogOut,
+  Menu,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
@@ -32,6 +34,7 @@ export default function DashboardPage() {
   const [streak, setStreak] = useState<number>(0);
   const [claimingStreak, setClaimingStreak] = useState(false);
   const [activities, setActivities] = useState<any[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (session?.user) {
@@ -107,14 +110,26 @@ export default function DashboardPage() {
   const userName = session?.user?.name || 'Player';
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#0f172a] flex">
+    <div className="min-h-screen bg-[#f1f5f9] dark:bg-[#0f172a] flex relative">
       {/* Sidebar Navigation */}
-      <aside className="w-24 lg:w-64 border-r border-brand-navy/5 bg-white/50 backdrop-blur-xl flex flex-col items-center py-8 z-20">
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-64 border-r border-brand-navy/5 bg-white/95 backdrop-blur-xl 
+        flex flex-col items-center py-8 transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-24 xl:w-64'}
+      `}>
+        <button 
+          onClick={() => setIsSidebarOpen(false)}
+          className="lg:hidden absolute top-6 right-6 p-2 text-brand-navy/40"
+        >
+          <X className="w-6 h-6" />
+        </button>
+
         <Link href="/" className="w-12 h-12 bg-brand-navy rounded-2xl flex items-center justify-center mb-12 shadow-lg shadow-brand-navy/20">
           <Trophy className="text-white w-6 h-6" />
         </Link>
 
-        <nav className="flex-1 flex flex-col gap-6">
+        <nav className="flex-1 flex flex-col gap-6 w-full px-4">
           {[
             { icon: Gamepad2, label: 'Play', active: true },
             { icon: Wallet, label: 'Wallet' },
@@ -124,23 +139,32 @@ export default function DashboardPage() {
           ].map((item, idx) => (
             <button 
               key={idx} 
-              className={`flex items-center gap-4 p-4 rounded-2xl transition-all group ${
+              className={`flex items-center gap-4 p-4 rounded-2xl transition-all group w-full ${
                 item.active ? 'bg-brand-pink text-white shadow-lg shadow-brand-pink/30' : 'text-brand-navy/40 hover:bg-brand-navy/5'
               }`}
             >
-              <item.icon className="w-6 h-6" />
-              <span className="hidden lg:block font-black uppercase text-xs tracking-widest">{item.label}</span>
+              <item.icon className="w-6 h-6 shrink-0" />
+              <span className={`${isSidebarOpen ? 'block' : 'hidden lg:hidden xl:block'} font-black uppercase text-xs tracking-widest`}>{item.label}</span>
             </button>
           ))}
         </nav>
 
         <button 
           onClick={() => signOut({ callbackUrl: '/' })}
-          className="p-4 text-brand-pink hover:bg-brand-pink/10 rounded-2xl transition-all"
+          className="p-4 text-brand-pink hover:bg-brand-pink/10 rounded-2xl transition-all flex items-center gap-4 w-full px-8 lg:px-4 justify-center lg:justify-center xl:justify-start"
         >
-          <LogOut className="w-6 h-6" />
+          <LogOut className="w-6 h-6 shrink-0" />
+          <span className={`${isSidebarOpen ? 'block' : 'hidden xl:block'} font-black uppercase text-xs tracking-widest`}>Logout</span>
         </button>
       </aside>
+
+      {/* Overlay for mobile sidebar */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-brand-navy/20 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 section-padding relative overflow-y-auto">
@@ -158,6 +182,12 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden w-12 h-12 glass-card flex items-center justify-center bg-white"
+              >
+                <Menu className="w-6 h-6 text-brand-navy" />
+              </button>
               <button className="w-12 h-12 glass-card flex items-center justify-center bg-white/80">
                 <Bell className="w-5 h-5 text-brand-navy" />
               </button>
