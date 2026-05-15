@@ -43,9 +43,11 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
     const response = await result.response;
     const text = response.text();
     
-    // Clean potential markdown code blocks
-    const cleanedJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    const questions = JSON.parse(cleanedJson);
+    // Use regex to extract the JSON array from the response text
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error("Could not find a valid JSON array in AI response: " + text);
+    
+    const questions = JSON.parse(jsonMatch[0]);
 
     if (!Array.isArray(questions)) throw new Error("Invalid AI response format");
 

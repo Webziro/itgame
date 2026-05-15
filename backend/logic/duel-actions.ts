@@ -167,14 +167,18 @@ export async function joinSoloDuel(wager: number) {
           // 2. Fetch Questions FIRST (ensure we have enough)
           const totalAvailable = await tx.question.count({ where: { difficulty: "MEDIUM" } });
           
-          // Background refill if low
-          if (totalAvailable < 10) {
-            console.log("🌊 Question pool low, triggering AI refill...");
-            // We don't await this to keep the user experience fast
+          if (totalAvailable === 0) {
+            console.log("🚨 Database empty! Performing synchronous AI refill...");
+            const refill = await refillQuestionPool("MEDIUM", 20);
+            if (!refill.success) {
+              throw new Error(`AI Refill Failed: ${refill.error || "Please check your GEMINI_API_KEY"}`);
+            }
+          } else if (totalAvailable < 10) {
+            console.log("🌊 Question pool low, triggering background AI refill...");
             refillQuestionPool("MEDIUM", 20).catch(console.error);
           }
 
-          // 2. Fetch 5 RANDOM Questions
+          // Fetch 5 RANDOM Questions
           const allQuestions = await tx.question.findMany({
             where: { difficulty: "MEDIUM" },
             select: { id: true }
