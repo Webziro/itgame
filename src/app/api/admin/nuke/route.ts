@@ -6,12 +6,12 @@ export async function GET() {
     const res = await nukeAndRefillQuestions();
     if (res.success) {
       return new NextResponse(
-        `<h1>Success!</h1><p>${res.message}</p><p>Available models: ${modelNames}</p><p><a href="/dashboard">Return to Dashboard</a></p>`,
+        `<h1>Success!</h1><p>${res.message}</p><p><a href="/dashboard">Return to Dashboard</a></p>`,
         { headers: { 'Content-Type': 'text/html' } }
       );
     } else {
       return new NextResponse(
-        `<h1>Error</h1><p>${res.error}</p><p><strong>Your Key supports these models:</strong><br/> ${modelNames}</p>`,
+        `<h1>Error</h1><p>${res.error}</p>`,
         { headers: { 'Content-Type': 'text/html' } }
       );
     }
