@@ -25,6 +25,7 @@ import DepositButton from '@/components/game/DepositButton';
 import axios from 'axios';
 
 import { pusherClient } from '@/lib/pusher-client';
+import { nukeAndRefillQuestions } from '@/../backend/logic/ai-actions';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -35,6 +36,27 @@ export default function DashboardPage() {
   const [claimingStreak, setClaimingStreak] = useState(false);
   const [activities, setActivities] = useState<any[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isNuking, setIsNuking] = useState(false);
+
+  const isAdmin = (session?.user as any)?.role === 'ADMIN' || process.env.NODE_ENV === 'development';
+
+  const handleNukeQuestions = async () => {
+    if (!confirm("⚠️ DANGER: This will delete ALL current questions and generate 45 NEW ones from Gemini. Proceed?")) return;
+    
+    try {
+      setIsNuking(true);
+      const res = await nukeAndRefillQuestions();
+      if (res.success) {
+        alert(res.message);
+      } else {
+        alert("Error: " + res.error);
+      }
+    } catch (err) {
+      alert("Failed to refill questions");
+    } finally {
+      setIsNuking(false);
+    }
+  };
 
   useEffect(() => {
     if (session?.user) {
@@ -340,9 +362,28 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
+            {/* Admin Controls */}
+            {isAdmin && (
+              <div className="mt-12 p-8 glass-card bg-red-500/5 border-red-500/10">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                  <div>
+                    <h3 className="text-xl font-black text-white uppercase tracking-tighter">Admin Question Master</h3>
+                    <p className="text-sm font-bold text-white/40 uppercase tracking-widest mt-1">Force update all Arena content</p>
+                  </div>
+                  <button 
+                    onClick={handleNukeQuestions}
+                    disabled={isNuking}
+                    className="btn-fun bg-red-500 text-white px-8 py-4 disabled:opacity-50"
+                  >
+                    {isNuking ? "Nuking & Refilling..." : "Nuke & Refresh All Questions"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
     </div>
   );
 }
+

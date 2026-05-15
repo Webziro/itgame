@@ -67,3 +67,32 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
     return { success: false, error: error.message };
   }
 }
+
+export async function nukeAndRefillQuestions() {
+  try {
+    const session = await auth();
+    if (!session?.user) return { success: false, error: "Unauthorized" };
+    
+    // Safety: In production, strictly check for ADMIN role
+    if (process.env.NODE_ENV === 'production' && (session.user as any).role !== 'ADMIN') {
+      return { success: false, error: "Admin access required" };
+    }
+
+    // 1. Delete all questions
+    await prisma.question.deleteMany({});
+
+    // 2. Refill for all difficulties
+    // We do them sequentially or in parallel depending on API limits
+    await Promise.all([
+      refillQuestionPool("EASY", 15),
+      refillQuestionPool("MEDIUM", 15),
+      refillQuestionPool("HARD", 15)
+    ]);
+
+    return { success: true, message: "Database nuked and refilled with 45 fresh AI questions." };
+  } catch (error: any) {
+    console.error("Nuke Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+

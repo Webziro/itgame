@@ -4,19 +4,40 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useRouter } from 'next/navigation';
-import { HARD_QUESTIONS } from '@/data/hard-questions';
 import { Check, X, Timer, Trophy, ArrowRight, RotateCcw } from 'lucide-react';
 import { cn } from '@database/utils';
 
 export default function FreeGame() {
+  const [questions, setQuestions] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [gameState, setGameState] = useState<'playing' | 'finished'>('playing');
+  const [gameState, setGameState] = useState<'loading' | 'playing' | 'finished'>('loading');
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const router = useRouter();
 
-  const currentQuestion = HARD_QUESTIONS[currentIndex];
+  useEffect(() => {
+    async function fetchQuestions() {
+      try {
+        const res = await fetch('/api/questions/free');
+        const data = await res.json();
+        if (data && data.length > 0) {
+          setQuestions(data);
+          setGameState('playing');
+        } else {
+          // Fallback if DB is empty
+          setGameState('playing');
+          setQuestions([]); 
+        }
+      } catch (err) {
+        console.error("Failed to fetch questions", err);
+        setGameState('playing');
+      }
+    }
+    fetchQuestions();
+  }, []);
+
+  const currentQuestion = questions[currentIndex];
 
   const handleOptionClick = (index: number) => {
     if (selectedOption !== null) return;
@@ -34,14 +55,14 @@ export default function FreeGame() {
     }
 
     setTimeout(() => {
-      if (currentIndex < HARD_QUESTIONS.length - 1) {
+      if (currentIndex < questions.length - 1) {
         setCurrentIndex(currentIndex + 1);
         setSelectedOption(null);
         setIsCorrect(null);
       } else {
         setGameState('finished');
         const finalScore = score + (correct ? 1 : 0);
-        if (finalScore === 10) {
+        if (finalScore === questions.length) {
           const duration = 3 * 1000;
           const end = Date.now() + duration;
 
@@ -71,22 +92,31 @@ export default function FreeGame() {
     }, 1500);
   };
 
+  if (gameState === 'loading') {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 space-y-4">
+        <div className="w-12 h-12 border-4 border-brand-pink border-t-transparent rounded-full animate-spin" />
+        <p className="text-white/40 font-bold uppercase text-xs tracking-widest">Fetching Arena Questions...</p>
+      </div>
+    );
+  }
+
   if (gameState === 'finished') {
     return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="glass-card max-w-md mx-auto text-center py-12 px-6 bg-white/20"
+        className="glass-card max-w-md mx-auto text-center py-12 px-6 bg-white/5 border-white/10"
       >
         <div className="w-24 h-24 bg-brand-orange/20 rounded-full flex items-center justify-center mx-auto mb-6">
           <Trophy className="w-12 h-12 text-brand-orange" />
         </div>
-        <h2 className="text-4xl font-black mb-2 text-brand-navy dark:text-white">GAME OVER!</h2>
-        <p className="text-2xl font-bold opacity-60 mb-8">
-          Result: <span className="text-brand-pink">{score}/10</span>
+        <h2 className="text-4xl font-black mb-2 text-white">GAME OVER!</h2>
+        <p className="text-2xl font-bold opacity-60 mb-8 text-white/60">
+          Result: <span className="text-brand-pink">{score}/{questions.length}</span>
         </p>
         
-        {score === 10 ? (
+        {score === questions.length ? (
           <div className="space-y-6">
             <div className="bg-brand-teal/20 text-brand-teal p-6 rounded-3xl border border-brand-teal/30">
               <p className="font-black text-xl">GOD LEVEL! 🏆</p>
@@ -102,7 +132,7 @@ export default function FreeGame() {
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-sm font-bold opacity-40 uppercase tracking-widest">Only 10/10 wins the bonus</p>
+            <p className="text-sm font-bold opacity-40 uppercase tracking-widest text-white/40">Only {questions.length}/{questions.length} wins the bonus</p>
             <button 
               onClick={() => window.location.reload()}
               className="btn-fun btn-orange w-full justify-center text-xl"
@@ -117,21 +147,21 @@ export default function FreeGame() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-6 py-8 glass-card bg-white/10">
+    <div className="max-w-xl mx-auto px-6 py-8 glass-card bg-white/5 border-white/10">
       <div className="flex justify-between items-center mb-8">
-        <div className="text-sm font-black text-brand-navy/40 dark:text-white/40 uppercase tracking-widest">
-          LVL <span className="text-brand-navy dark:text-white">{currentIndex + 1}</span> / {HARD_QUESTIONS.length}
+        <div className="text-sm font-black text-white/40 uppercase tracking-widest">
+          LVL <span className="text-white">{currentIndex + 1}</span> / {questions.length}
         </div>
         <div className="px-4 py-1 bg-brand-pink text-white rounded-full text-xs font-black uppercase tracking-tighter shadow-lg shadow-brand-pink/30">
           Streak: {score}
         </div>
       </div>
 
-      <div className="w-full bg-brand-navy/5 h-4 rounded-full mb-12 overflow-hidden border border-brand-navy/5">
+      <div className="w-full bg-white/5 h-4 rounded-full mb-12 overflow-hidden border border-white/10">
         <motion.div 
           className="h-full bg-gradient-to-r from-brand-pink to-brand-orange"
           initial={{ width: 0 }}
-          animate={{ width: `${((currentIndex + 1) / HARD_QUESTIONS.length) * 100}%` }}
+          animate={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
         />
       </div>
 
