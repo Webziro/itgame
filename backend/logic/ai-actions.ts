@@ -57,6 +57,10 @@ export async function refillQuestionPool(difficulty: 'EASY' | 'MEDIUM' | 'HARD',
       }
     }
 
+    if (!result) {
+      throw new Error("Failed to generate content with all attempted AI models.");
+    }
+
     const response = await result.response;
     const text = response.text();
     
