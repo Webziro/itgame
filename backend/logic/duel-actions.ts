@@ -130,11 +130,22 @@ export async function joinSoloDuel(wager: number) {
     const session = await auth();
     const userId = session?.user?.id;
     if (!userId) return { success: false, error: "Unauthorized: Please sign in to play" };
+    
+    // 0. Ensure we have questions BEFORE starting the transaction
+    const totalAvailableGlobal = await prisma.question.count({ where: { difficulty: "MEDIUM" } });
+    if (totalAvailableGlobal === 0) {
+      console.log("🚨 Database empty! Performing synchronous AI/Seed refill...");
+      await refillQuestionPool("MEDIUM", 20);
+    } else if (totalAvailableGlobal < 10) {
+      console.log("🌊 Question pool low, triggering background AI refill...");
+      refillQuestionPool("MEDIUM", 20).catch(console.error);
+    }
 
     let retries = 3;
     while (retries > 0) {
       try {
         const result = await prisma.$transaction(async (tx) => {
+
           // 1. Check for existing UNFINISHED solo duel
           const existingSolo = await tx.duel.findFirst({
             where: {
@@ -162,17 +173,6 @@ export async function joinSoloDuel(wager: number) {
           const totalBalance = user.walletBalance + user.bonusBalance;
           if (totalBalance < wager) {
             throw new Error(`Insufficient balance. You need ₦${wager} to enter this arena.`);
-          }
-
-          // 2. Fetch Questions FIRST (ensure we have enough)
-          const totalAvailable = await tx.question.count({ where: { difficulty: "MEDIUM" } });
-          
-          if (totalAvailable === 0) {
-            console.log("🚨 Database empty! Performing synchronous AI/Seed refill...");
-            await refillQuestionPool("MEDIUM", 20);
-          } else if (totalAvailable < 10) {
-            console.log("🌊 Question pool low, triggering background AI refill...");
-            refillQuestionPool("MEDIUM", 20).catch(console.error);
           }
 
           // Fetch 5 RANDOM Questions
