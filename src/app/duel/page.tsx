@@ -25,113 +25,114 @@ export default function DuelPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6">
-      <div className="max-w-2xl mx-auto">
-        <Link href="/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-brand-pink mb-8 font-bold">
+    <div className="min-h-screen bg-[#0f172a] text-white p-6 relative overflow-hidden">
+      {/* Background Accents */}
+      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-pink/5 blur-[120px] rounded-full pointer-events-none" />
+      
+      <div className="max-w-2xl mx-auto relative z-10">
+        <Link href="/dashboard" className="inline-flex items-center gap-2 text-white/40 hover:text-brand-pink mb-8 font-black uppercase text-xs tracking-widest transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Link>
 
-        <div className="card-premium p-8 space-y-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-brand-navy rounded-2xl flex items-center justify-center">
-              <Zap className="text-white w-6 h-6 fill-white" />
+        <div className="glass-card p-8 sm:p-12 space-y-10 bg-white/5 border-white/10">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl">
+              <Zap className="text-brand-pink w-8 h-8 fill-brand-pink" />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-brand-navy uppercase tracking-tighter">Arena Selection</h1>
-              <p className="font-bold opacity-40">Choose your opponent and wager</p>
+              <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none mb-2">Arena Selection</h1>
+              <p className="font-bold text-white/40 uppercase text-[10px] tracking-[0.3em]">Choose your opponent and wager</p>
             </div>
           </div>
 
           {/* Mode Selector */}
           <div className="space-y-4">
-            <div className="text-xs font-black uppercase tracking-[0.2em] opacity-40 px-2">Choose Arena Mode</div>
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 px-2">Choose Arena Mode</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 onClick={() => setMode('1v1')}
                 className={cn(
-                  "p-6 rounded-3xl border-2 flex items-center gap-4 transition-all text-left group",
-                  mode === '1v1' ? "border-brand-pink bg-white shadow-xl shadow-brand-pink/10" : "border-slate-100 bg-white hover:border-brand-pink/30"
+                  "p-8 rounded-[2.5rem] border-2 flex flex-col gap-4 transition-all text-left relative overflow-hidden group",
+                  mode === '1v1' ? "border-brand-pink bg-brand-pink/5" : "border-white/5 bg-white/5 hover:border-white/10"
                 )}
               >
                 <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
-                  mode === '1v1' ? "bg-brand-pink text-white" : "bg-slate-100 text-slate-400 group-hover:bg-brand-pink/10 group-hover:text-brand-pink"
+                  "w-14 h-14 rounded-2xl flex items-center justify-center transition-all",
+                  mode === '1v1' ? "bg-brand-pink text-white shadow-[0_0_30px_rgba(255,51,255,0.4)]" : "bg-white/5 text-white/40 group-hover:text-white"
                 )}>
-                  <Users className="w-6 h-6" />
+                  <Users className="w-7 h-7" />
                 </div>
                 <div>
-                  <div className="font-black uppercase text-sm tracking-tight text-brand-navy">1v1 Human Duel</div>
-                  <div className="text-xs font-bold text-brand-navy/50">Battle real opponents</div>
+                  <div className="font-black uppercase text-base tracking-tight text-white mb-1">Human Duel</div>
+                  <div className="text-xs font-bold text-white/40">Battle real opponents 1v1</div>
                 </div>
               </button>
 
               <button
                 onClick={() => setMode('solo')}
                 className={cn(
-                  "p-6 rounded-3xl border-2 flex items-center gap-4 transition-all text-left group",
-                  mode === 'solo' ? "border-brand-navy bg-brand-navy text-white shadow-xl shadow-brand-navy/30" : "border-slate-100 bg-white hover:border-brand-navy/30"
+                  "p-8 rounded-[2.5rem] border-2 flex flex-col gap-4 transition-all text-left relative overflow-hidden group",
+                  mode === 'solo' ? "border-brand-teal bg-brand-teal/5" : "border-white/5 bg-white/5 hover:border-white/10"
                 )}
               >
                 <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-colors",
-                  mode === 'solo' ? "bg-white text-brand-navy" : "bg-slate-100 text-slate-400 group-hover:bg-brand-navy/10 group-hover:text-brand-navy"
+                  "w-14 h-14 rounded-2xl flex items-center justify-center transition-all",
+                  mode === 'solo' ? "bg-brand-teal text-white shadow-[0_0_30px_rgba(79,209,197,0.4)]" : "bg-white/5 text-white/40 group-hover:text-white"
                 )}>
-                  <Monitor className="w-6 h-6" />
+                  <Monitor className="w-7 h-7" />
                 </div>
                 <div>
-                  <div className={cn("font-black uppercase text-sm tracking-tight", mode === 'solo' ? "text-white" : "text-brand-navy")}>The Computer</div>
-                  <div className={cn("text-xs font-bold", mode === 'solo' ? "text-white/60" : "text-brand-navy/50")}>Solo - Perfect score wins 2x</div>
+                  <div className="font-black uppercase text-base tracking-tight text-white mb-1">The Computer</div>
+                  <div className="text-xs font-bold text-white/40">Solo - Perfect score wins 2x</div>
                 </div>
               </button>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="text-xs font-black uppercase tracking-[0.2em] text-brand-navy/30 px-2">Select Wager</div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 px-2">Select Wager</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {options.map((opt) => (
                 <button
                   key={opt}
                   onClick={() => setPledge(opt)}
-                  className={`p-6 rounded-2xl border-2 transition-all text-center ${
+                  className={cn(
+                    "p-6 rounded-2xl border-2 transition-all text-center group",
                     pledge === opt 
-                      ? 'border-brand-pink bg-brand-pink/5 text-brand-pink shadow-lg shadow-brand-pink/10' 
-                      : 'border-slate-100 hover:border-slate-200 text-brand-navy'
-                  }`}
+                      ? 'border-brand-pink bg-brand-pink/10 text-white' 
+                      : 'border-white/5 bg-white/5 hover:border-white/10 text-white/40'
+                  )}
                 >
-                  <div className="text-2xl font-black">₦{opt.toLocaleString()}</div>
+                  <div className="text-xl font-black">₦{opt.toLocaleString()}</div>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3 text-slate-600 font-bold">
-                <Wallet className="w-5 h-5" />
-                Potential Win:
-              </div>
-              <div className="text-2xl font-black text-brand-teal">
+          <div className="p-8 bg-white/5 rounded-[2rem] border border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="space-y-1 text-center sm:text-left">
+              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">Potential Payout</div>
+              <div className="text-4xl font-black text-brand-teal tracking-tighter">
                 ₦{pledge ? (mode === 'solo' ? pledge * 2 : pledge * 1.8).toLocaleString() : '0'}
               </div>
             </div>
-            <p className="text-xs text-slate-400">
-              {mode === 'solo' 
-                ? "Computer Arena: No house fee. Win 2x if you answer ALL correctly. Lose if any are wrong."
-                : "1v1 Arena: 10% house fee. Winner takes the pot. Refund available if no opponent found."}
-            </p>
+            <button
+              disabled={!pledge}
+              onClick={() => setConfirmed(true)}
+              className={cn(
+                "btn-fun px-12 py-5 text-xl w-full sm:w-auto shadow-2xl transition-all disabled:opacity-30 disabled:grayscale",
+                mode === 'solo' ? "bg-brand-teal text-brand-navy" : "bg-brand-pink text-white shadow-brand-pink/40"
+              )}
+            >
+              {mode === 'solo' ? 'Battle Bot' : 'Enter Arena'}
+            </button>
           </div>
 
-          <button
-            disabled={!pledge}
-            onClick={() => setConfirmed(true)}
-            className={cn(
-              "btn-fun w-full py-5 text-lg shadow-2xl transition-all disabled:opacity-50 disabled:grayscale",
-              mode === 'solo' ? "bg-brand-navy text-white" : "bg-brand-pink text-white shadow-brand-pink/30"
-            )}
-          >
-            {mode === 'solo' ? 'Battle the Computer' : 'Enter 1v1 Arena'}
-          </button>
+          <p className="text-[10px] text-center font-bold text-white/20 uppercase tracking-[0.2em] leading-relaxed">
+            {mode === 'solo' 
+              ? "Computer Arena: No house fee. Win 2x if you answer ALL correctly."
+              : "1v1 Arena: 10% house fee. Winner takes the pot."}
+          </p>
         </div>
       </div>
     </div>

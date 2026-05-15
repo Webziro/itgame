@@ -110,11 +110,15 @@ export default function DashboardPage() {
   const userName = session?.user?.name || 'Player';
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] dark:bg-[#0f172a] flex relative">
+    <div className="min-h-screen bg-[#0f172a] text-white flex relative overflow-hidden">
+      {/* Background Accents */}
+      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-pink/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-teal/5 blur-[120px] rounded-full pointer-events-none" />
+
       {/* Sidebar Navigation */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
-        w-64 border-r border-brand-navy/5 bg-white/95 backdrop-blur-xl 
+        w-64 border-r border-white/5 bg-[#0f172a]/95 backdrop-blur-xl 
         flex flex-col items-center py-8 transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-24 xl:w-64'}
       `}>
@@ -175,7 +179,7 @@ export default function DashboardPage() {
           {/* Header Section */}
           <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
             <div className="space-y-1">
-              <h2 className="text-4xl lg:text-5xl font-black text-brand-navy dark:text-white uppercase tracking-tighter">
+              <h2 className="text-4xl lg:text-5xl font-black text-white uppercase tracking-tighter">
                 Welcome Back, <span className="text-brand-pink">{userName.split(' ')[0]}</span>
               </h2>
               <p className="text-xl font-bold opacity-40">Ready to secure the bag today?</p>
@@ -184,19 +188,19 @@ export default function DashboardPage() {
             <div className="flex items-center gap-4">
               <button 
                 onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden w-12 h-12 glass-card flex items-center justify-center bg-white"
+                className="lg:hidden w-12 h-12 glass-card flex items-center justify-center bg-white/5"
               >
-                <Menu className="w-6 h-6 text-brand-navy" />
+                <Menu className="w-6 h-6 text-white" />
               </button>
-              <button className="w-12 h-12 glass-card flex items-center justify-center bg-white/80">
-                <Bell className="w-5 h-5 text-brand-navy" />
+              <button className="w-12 h-12 glass-card flex items-center justify-center bg-white/5">
+                <Bell className="w-5 h-5 text-white" />
               </button>
-              <div className="glass-card flex items-center gap-3 pr-6 pl-2 py-2 bg-white/80">
+              <div className="glass-card flex items-center gap-3 pr-6 pl-2 py-2 bg-white/5">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-pink to-brand-orange flex items-center justify-center font-black text-white uppercase">
                   {userInitial}
                 </div>
                 <div className="hidden sm:block">
-                  <div className="text-sm font-black text-brand-navy">{userName}</div>
+                  <div className="text-sm font-black text-white">{userName}</div>
                   <div className="text-[10px] font-black opacity-40 uppercase tracking-widest">Player Tier</div>
                 </div>
               </div>
@@ -243,7 +247,7 @@ export default function DashboardPage() {
                       <Zap className="text-white w-7 h-7 fill-white" />
                     </div>
                     <div className="space-y-2">
-                      <h3 className="text-3xl font-black text-brand-navy">THE DUEL</h3>
+                      <h3 className="text-3xl font-black text-white">THE DUEL</h3>
                       <p className="text-lg font-bold opacity-50 leading-tight">Instant 1v1 Wagering. Double your money in 60s.</p>
                     </div>
                     <button 
@@ -268,7 +272,7 @@ export default function DashboardPage() {
                       <Trophy className="text-white w-7 h-7 fill-white" />
                     </div>
                     <div className="space-y-2">
-                      <h3 className="text-3xl font-black text-brand-navy uppercase italic">The Pool</h3>
+                      <h3 className="text-3xl font-black text-white uppercase italic">The Pool</h3>
                       <p className="text-lg font-bold opacity-50 leading-tight">Weekly Jackpot. Low entry, massive rewards.</p>
                     </div>
                     <div className="flex items-center gap-2 text-brand-orange font-black text-sm uppercase tracking-widest">
@@ -297,7 +301,7 @@ export default function DashboardPage() {
                           {item.initial}
                         </div>
                         <div>
-                          <div className="text-sm font-black text-brand-navy">{item.user}</div>
+                          <div className="text-sm font-black text-white">{item.user}</div>
                           <div className="text-[10px] uppercase font-bold opacity-40">{item.type}</div>
                         </div>
                       </div>
@@ -305,16 +309,16 @@ export default function DashboardPage() {
                     </motion.div>
                   ))}
                 </div>
-                <button className="w-full mt-8 py-4 border-2 border-brand-navy/5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-navy/5 transition-colors">
+                <button className="w-full mt-8 py-4 border-2 border-white/5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/5 transition-colors">
                   View Leaderboard
                 </button>
               </div>
 
               {/* Bonus Tracker */}
-              <div className="glass-card p-8 bg-white/80 overflow-hidden relative">
+              <div className="glass-card p-8 bg-white/5 border-white/10 overflow-hidden relative">
                 <div className="absolute bottom-0 right-0 w-32 h-32 bg-brand-pink/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-sm font-black text-brand-navy">Daily Streak Bonus</h4>
+                  <h4 className="text-sm font-black text-white">Daily Streak Bonus</h4>
                   <span className="text-xs font-black text-brand-pink">{streak}/7 Days</span>
                 </div>
                 <div className="flex gap-2 mb-6">
